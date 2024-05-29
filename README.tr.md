@@ -37,10 +37,10 @@ Uygulamanın düzgün çalışması için aşağıdaki ortam değişkenleri gere
 
 ``DEFAULT_BIO``: Herhangi bir oyun oynamadığınızda Telegram profil durumunuz olarak ayarlanacak varsayılan biyografi.
 
-``APP_ICON``: Uygulama penceresinde görüntülenecek uygulama simgesi dosyasının yolu.
+⚠ Sadece bu 3 değişkeni düzenleyin! Diğer değişkenleri bilmiyorsanız lütfen değiştirmeyin, silmeyin!
 
 ```bash
-cp sample.env .env
+cp sample.tr.env .env
 ```
 
 Kopyaladıktan sonra düzenleme dosyasını şu komutla başlatın:

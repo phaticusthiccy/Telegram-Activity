@@ -54,6 +54,10 @@ me_welcome = None
 api_id = os.getenv("API_ID")
 api_hash = os.getenv("API_HASH")
 app_icon = os.getenv("APP_ICON")
+ACTION_EMOJI_LESS_10_MIN = os.getenv("ACTION_EMOJI_LESS_10_MIN")
+ACTION_EMOJI_10_TO_60_MIN = os.getenv("ACTION_EMOJI_10_TO_60_MIN")
+ACTION_EMOJI_60_TO_120_MIN = os.getenv("ACTION_EMOJI_60_TO_120_MIN")
+ACTION_EMOJI_MORE_120_MIN = os.getenv("ACTION_EMOJI_MORE_120_MIN")
 
 
 async def print_me():
@@ -74,13 +78,13 @@ def checkAuth():
         bool: True if all required configuration values are set, False otherwise.
     """
     if api_id is None:
-        raise ValueError("APP ID Missing!")
+        raise ValueError(os.getenv("APP_ID_MISSING"))
     if api_hash is None:
-        raise ValueError("APP HASH Missing!")
+        raise ValueError(os.getenv("APP_HASH_MISSING"))
     if default_bio is None:
-        raise ValueError("DEFAULT BIO Missing!")
+        raise ValueError(os.getenv("DEFAULT_BIO_MISSING"))
     if app_icon is None:
-        raise ValueError("APP ICON Missing!")
+        raise ValueError(os.getenv("APP_ICON_MISSING"))
     return True;
 
 def is_supported_os():
@@ -270,11 +274,13 @@ async def update_status(game_name, elapsed_time, games):
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
                     text_start += "`" + friendly_game_name2 + "`\n"
                     
+            if len(text_start) > 3800:
+                text_start = text_start[:3800] + "..."
             try:
-                await client.send_message("me", "__Telegram activity update is on! Your bio will change when you log in to the games below!__\n\n" + text_start, parse_mode="Markdown")
+                await client.send_message("me", os.getenv("START_MESSAGE") + text_start, parse_mode="Markdown")
             except:
                 await client.log_out()
-                messagebox.showerror("Error", "Could not connect to Telegram! Please try starting the project again.")
+                messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
                 return handle_exit(None, None)
     else: 
         if start == False:
@@ -288,20 +294,34 @@ async def update_status(game_name, elapsed_time, games):
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
                     text_start += "`" + friendly_game_name2 + "`\n"
 
+            if len(text_start) > 3800:
+                text_start = text_start[:3800] + "..."
             try:
-                await client.send_message("me", "__Telegram activity update is on! Your bio will change when you log in to the games below!__\n\n" + text_start, parse_mode="Markdown")
+                await client.send_message("me", os.getenv("START_MESSAGE") + text_start, parse_mode="Markdown")
             except:
                 await client.log_out()
-                messagebox.showerror("Error", "Could not connect to Telegram! Please try starting the project again.")
+                messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
                 return handle_exit(None, None)
 
         friendly_game_name = get_friendly_name(game_name)
         friendly_game_name = capitalize_first_letters(process_name_mapping[find_process_name(friendly_game_name)][0])
-        new_status = f"🎯 Playing {friendly_game_name} for {elapsed_time + 1} Minutes"
+        action_emoji = ""
+
+        if elapsed_time < 10:
+            action_emoji = ACTION_EMOJI_LESS_10_MIN
+        elif elapsed_time > 9 and elapsed_time < 60:
+            action_emoji = ACTION_EMOJI_10_TO_60_MIN
+        elif elapsed_time > 59 and elapsed_time < 120:
+            action_emoji = ACTION_EMOJI_60_TO_120_MIN
+        elif elapsed_time > 119:
+            action_emoji = ACTION_EMOJI_MORE_120_MIN
+        
+        new_status = os.getenv("ACTION_STATUS")
+        new_status = new_status.replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name).replace("#elapsed_time", str(elapsed_time + 1))
         try:
             await client(UpdateProfileRequest(about=new_status))
         except:
-            messagebox.showerror("Error", "About me is too long to update!")
+            messagebox.showerror(os.getenv("ERROR"), os.getenv("TOO_LONG"))
             root.quit()
             sys.exit()
         
@@ -367,16 +387,16 @@ def add_game(event=None):
     if friendly_name:
         process_names = get_process_name(friendly_name)
         if process_names in added_games:
-            messagebox.showerror("Error", "This game has already been added!")
+            messagebox.showerror(os.getenv("ERROR"), "This game has already been added!")
             return
         added_games.append(process_names)
         findgame = find_process_name(process_names)
         if findgame == False:
-            return messagebox.showwarning("Warning", "This game is not in the database!")
+            return messagebox.showwarning(os.getenv("WARNING"), "This game is not in the database!")
         games_listbox.insert(tk.END, process_names)
         game_entry.delete(0, tk.END)
     else:
-        messagebox.showwarning("Warning", "Please enter a valid game name.")
+        messagebox.showwarning(os.getenv("WARNING"), os.getenv("VALID_GAME_NAME"))
 
 def remove_game(arg=None):
     """
@@ -391,7 +411,7 @@ def remove_game(arg=None):
         if game_to_remove in added_games:
             added_games.remove(game_to_remove)
     else:
-        messagebox.showwarning("Warning", "Please select a game to delete.")
+        messagebox.showwarning(os.getenv("WARNING"), os.getenv("SELECT_GAME_TO_DEL"))
 
 def start_button_click():
     """
@@ -400,7 +420,7 @@ def start_button_click():
     This function is called when the user clicks the "Start" button in the GUI. It retrieves the list of games selected in the listbox, checks if the default biography is within the character limit, and then starts the game monitoring process. If no games are selected, it displays a warning message.
     """
     if not is_supported_os():
-        print("This application only works on Windows, Linux and macOS operating systems.")
+        print(os.getenv("UNSUPPORTED_OS"))
         return
 
     games = [tuple(games_listbox.get(i).split(", ")) for i in range(games_listbox.size())]
@@ -408,13 +428,13 @@ def start_button_click():
         global default_bio
         default_bio = default_bio_text.get("1.0", tk.END)
         if len(default_bio) > 70:
-            messagebox.showerror("Error", "The default bio cannot be more than 70 characters!")
+            messagebox.showerror(os.getenv("ERROR"), "The default bio cannot be more than 70 characters!")
             return
         root.iconify()
-        messagebox.showinfo("Started!", "The application has been launched successfully. Please close this window and you will start seeing your gaming status in your Telegram profile. Enjoy!")
+        messagebox.showinfo(os.getenv("STARTED"), os.getenv("STARTED_MESSAGE"))
         start_monitoring(games, root)
     else:
-        messagebox.showwarning("Warning", "Please add at least one game.")
+        messagebox.showwarning(os.getenv("WARNING"), os.getenv("ADD_AT_LEAST_ONE_GAME"))
 
 def add_game_to_list(process_name, list_window):
     """
@@ -429,7 +449,7 @@ def add_game_to_list(process_name, list_window):
     """
     def add_to_list():
         if process_name in added_games:
-            messagebox.showerror("Error", "This game has already been added!")
+            messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
             return
         else:
             added_games.append(process_name)
@@ -482,7 +502,7 @@ def show_list():
             event (tkinter.Event): The event object passed to the function by the Tkinter event handler.
         """
         search_term = search_var.get().lower()
-        if search_term == "type the game you want to search here":
+        if search_term == os.getenv("FRAME_HINT_PLACEHOLDER").lower():
             search_term = None
         listbox.delete(0, tk.END)
         for key in sorted_keys:
@@ -495,7 +515,7 @@ def show_list():
                 
 
     list_window = tk.Toplevel(root)
-    list_window.title("Game List")
+    list_window.title(os.getenv("FRAME_GAME_LIST"))
     list_frame = tk.Frame(list_window)
     list_frame.pack(padx=20, pady=20)
 
@@ -503,10 +523,12 @@ def show_list():
     search_var = tk.StringVar()
     search_entry = tk.Entry(list_frame, textvariable=search_var, font=("Helvetica", 12), width=50)
     search_entry.grid(row=0, column=0, columnspan=2, pady=10)
-    add_placeholder(search_entry, "Type the game you want to search here")
+    add_placeholder(search_entry, os.getenv("FRAME_HINT_PLACEHOLDER"))
     search_entry.bind("<KeyRelease>", filter_list)
 
-    label = tk.Label(list_frame, text="Game List - Found " + str(len(process_name_mapping)) + " Game", font=("Helvetica", 12))
+    label_Text_Found_Games = os.getenv("FRAME_FOUND_GAMES")
+    label_Text_Found_Games = label_Text_Found_Games.replace("#game_count", str(len(process_name_mapping)))
+    label = tk.Label(list_frame, text=label_Text_Found_Games, font=("Helvetica", 12))
     label.grid(row=1, column=0, columnspan=2, pady=10)
 
     listbox = tk.Listbox(list_frame, width=60, height=20, selectmode=tk.SINGLE)
@@ -542,7 +564,7 @@ def show_list():
                 return
 
             if selected_game in added_games:
-                messagebox.showerror("Error", "This game has already been added!")
+                messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
                 return
             else:
                 added_games.append(selected_game)
@@ -551,10 +573,10 @@ def show_list():
                 filter_list(None)
 
     listbox.bind("<Return>", add_to_list)
-    add_button = tk.Button(list_frame, text="Add", command=add_to_list)
+    add_button = tk.Button(list_frame, text=os.getenv("ADD"), command=add_to_list)
     add_button.grid(row=3, column=0, padx=10, pady=10)
 
-    close_button = tk.Button(list_frame, text="Close", command=list_window.destroy)
+    close_button = tk.Button(list_frame, text=os.getenv("CLOSE"), command=list_window.destroy)
     close_button.grid(row=3, column=1, padx=10, pady=10)
 
     list_window.resizable(False, False)
@@ -570,7 +592,8 @@ Args:
 Returns:
     dict: A dictionary containing the process name mapping.
 """
-mapping_file_path = './process_mapping.json'
+
+mapping_file_path = os.getenv("GAME_DATA_JSON")
 process_name_mapping = load_process_mapping(mapping_file_path)
 
 """
@@ -580,7 +603,7 @@ The `TelegramClient` object is used to interact with the Telegram API. This code
 
 The client session is required for making API calls to Telegram, such as sending messages, retrieving data, and more.
 """
-client = TelegramClient('./status_changer', int(api_id), api_hash)
+client = TelegramClient(os.getenv("SESSION_NAME"), int(api_id), api_hash)
 client.start()
 
 """
@@ -596,7 +619,7 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(print_me())
 
 root = tk.Tk()
-root.title("Telegram Game Status")
+root.title(os.getenv("APP_TITLE"))
 icon_image = Image.open(str(app_icon))
 icon_image = icon_image.convert('RGBA')
 icon = ImageTk.PhotoImage(icon_image)
@@ -605,7 +628,9 @@ root.iconphoto(False, icon)
 label_frame = tk.Frame(root)
 label_frame.pack(pady=0)
 
-label = tk.Label(label_frame, text="Hi " + me_welcome.first_name, font=("Helvetica", 15))
+welcome_label = os.getenv("WELCOME")
+welcome_label = welcome_label.replace("#firs_name", me_welcome.first_name)
+label = tk.Label(label_frame, text=welcome_label, font=("Helvetica", 15))
 label.pack()
 
 frame = tk.Frame(root)
@@ -614,30 +639,30 @@ frame.pack(padx=40, pady=0)
 frame = tk.Frame(root)
 frame.pack(padx=40, pady=40)
 
-label = tk.Label(frame, text="Add Game:", font=("Helvetica", 12))
+label = tk.Label(frame, text=os.getenv("ADD_GAME"), font=("Helvetica", 12))
 label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
 
 game_entry = tk.Entry(frame, width=30, font=("Helvetica", 12))
 game_entry.grid(row=0, column=1, padx=5, pady=5)
 game_entry.bind("<Return>", add_game)
 
-add_button = tk.Button(frame, text="Add", command=add_game, font=("Helvetica", 12))
+add_button = tk.Button(frame, text=os.getenv("ADD_GAME_BUTTON"), command=add_game, font=("Helvetica", 12))
 add_button.grid(row=0, column=2, padx=5, pady=5)
 
-list_button = tk.Button(frame, text="List of Games", command=show_list, font=("Helvetica", 12))
+list_button = tk.Button(frame, text=os.getenv("LIST_OF_GAMES"), command=show_list, font=("Helvetica", 12))
 list_button.grid(row=0, column=3, padx=5, pady=5)
 
 games_listbox = tk.Listbox(frame, selectmode=tk.SINGLE, width=50, font=("Helvetica", 12))
 games_listbox.grid(row=1, column=0, columnspan=4, padx=5, pady=5)
 games_listbox.bind("<Delete>", remove_game)
 
-remove_button = tk.Button(frame, text="Delete", command=remove_game, font=("Helvetica", 12))
+remove_button = tk.Button(frame, text=os.getenv("DELETE"), command=remove_game, font=("Helvetica", 12))
 remove_button.grid(row=2, column=0, padx=5, pady=5, sticky="ew")
 
-start_button = tk.Button(frame, text="Run", command=start_button_click, font=("Helvetica", 12))
+start_button = tk.Button(frame, text=os.getenv("RUN"), command=start_button_click, font=("Helvetica", 12))
 start_button.grid(row=2, column=1, columnspan=3, padx=5, pady=5, sticky="ew")
 
-default_bio_label = tk.Label(frame, text="Default Bio:", font=("Helvetica", 12))
+default_bio_label = tk.Label(frame, text=os.getenv("DEFAULT_BIO_LABEL"), font=("Helvetica", 12))
 default_bio_label.grid(row=3, column=0, sticky="w", padx=5, pady=5)
 
 default_bio_text = tk.Text(frame, width=50, height=4, font=("Helvetica", 12))

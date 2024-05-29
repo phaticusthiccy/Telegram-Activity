@@ -36,7 +36,7 @@ The following environment variables are required for the application to function
 
 ``DEFAULT_BIO``: The default biography that will be set as your Telegram profile status when you're not playing any games.
 
-``APP_ICON``: The path to the application icon file, which will be displayed in the application window.
+⚠ Just edit these 3 variables! If you do not know the other variables, please do not change or delete them!
 
 ```bash
 cp sample.env .env
