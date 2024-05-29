@@ -72,7 +72,7 @@ def get_latest_version():
         response = requests.get("https://raw.githubusercontent.com/phaticusthiccy/Telegram-Activity/master/sample.env")
         response.raise_for_status()
         for line in response.text.split("\n"):
-            if line.startswith("RUN="):
+            if line.startswith("VERSION="):
                 return line.split("=")[1].strip('"')
     except requests.exceptions.RequestException as e:
         print(f"Error retrieving latest version: {e}")
