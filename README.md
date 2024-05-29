@@ -9,6 +9,14 @@ Telegram Game Status is a Python application that monitors the games you're play
 
 ## Requirements
 
+Firstly, clone the poject to your computer:
+
+```bash
+git clone https://github.com/phaticusthiccy/Telegram-Activity && cd ./Telegram-Activity
+```
+
+## 
+
 The following libraries are required for the project to run:
 
 - `asyncio`

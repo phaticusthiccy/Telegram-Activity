@@ -430,8 +430,9 @@ def start_button_click():
         if len(default_bio) > 70:
             messagebox.showerror(os.getenv("ERROR"), "The default bio cannot be more than 70 characters!")
             return
-        root.iconify()
         messagebox.showinfo(os.getenv("STARTED"), os.getenv("STARTED_MESSAGE"))
+        root.destroy()
+        print(os.getenv("CONSOLE_START_MESSAGE"))
         start_monitoring(games, root)
     else:
         messagebox.showwarning(os.getenv("WARNING"), os.getenv("ADD_AT_LEAST_ONE_GAME"))

@@ -8,6 +8,13 @@ Telegram Oyun Durumu, bilgisayarınızda oynadığınız oyunları izleyen ve Te
 
 ## Gereksinimler
 
+Önce projeyi kendi bilgisayarınıza klonlayın:
+```bash
+git clone https://github.com/phaticusthiccy/Telegram-Activity && cd ./Telegram-Activity
+```
+
+## 
+
 Projenin çalışması için aşağıdaki kütüphaneler gereklidir:
 
 - `asyncio`
@@ -33,7 +40,7 @@ Uygulamanın düzgün çalışması için aşağıdaki ortam değişkenleri gere
 
 ``API_ID``: Telegram API'sinde kimlik doğrulaması yapmak için gerekli olan Telegram API kimliğiniz.
 
-``API_HASH``: Kimlik doğrulama için de gerekli olan Telegram API HASH değeriniz..
+``API_HASH``: Kimlik doğrulama için de gerekli olan Telegram API HASH değeriniz.
 
 ``DEFAULT_BIO``: Herhangi bir oyun oynamadığınızda Telegram profil durumunuz olarak ayarlanacak varsayılan biyografi.
 
