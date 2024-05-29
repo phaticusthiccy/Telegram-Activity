@@ -26,6 +26,7 @@ The following libraries are required for the project to run:
 - `python-dotenv`
 - `pyinstaller`
 - `pillow`
+- `requests`
 
 You can install these dependencies using the `requirements.txt` file:
 

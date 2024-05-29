@@ -24,6 +24,7 @@ Projenin çalışması için aşağıdaki kütüphaneler gereklidir:
 - `python-dotenv`
 - `pyinstaller`
 - `pillow`
+- `requests`
 
 Bu bağımlılıkları `requirements.txt` dosyasını kullanarak yükleyebilirsiniz:
 

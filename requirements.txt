@@ -5,3 +5,4 @@ telethon
 python-dotenv
 pyinstaller
 pillow
+requests
