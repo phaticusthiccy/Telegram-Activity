@@ -76,5 +76,14 @@ To run the GUI application, use the gui.py file:
 ## Contributing
 If you want to contribute, please send a pull request or open an issue. Any contributions are welcome!
 
+⚠ Note :: This project is still in development, so there might be some bugs. Please report them if you find any. Also if you wan to add more games to the game list use method below. Make changes, create pull request and I'll merge it if its ok!
+
+```json
+{
+    "actual_process_name": ["real game name", "keyword 1", "keyword 2", "keyword n..", "actual_process_name"],
+    "my_game.exe": ["My Awsome Game", "awsome game", "mygame", "my_game.exe"]
+}
+```
+
 ## License
 This project is licensed under the [MIT License](LICENSE).
