@@ -1,0 +1,7 @@
+asyncio
+psutil
+tkinter
+telethon
+python-dotenv
+pyinstaller
+pillow
