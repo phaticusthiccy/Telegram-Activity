@@ -43,6 +43,7 @@ from dotenv import load_dotenv
 import os
 import platform
 from PIL import Image, ImageTk
+import requests
 
 
 load_dotenv()
@@ -59,6 +60,23 @@ ACTION_EMOJI_10_TO_60_MIN = os.getenv("ACTION_EMOJI_10_TO_60_MIN")
 ACTION_EMOJI_60_TO_120_MIN = os.getenv("ACTION_EMOJI_60_TO_120_MIN")
 ACTION_EMOJI_MORE_120_MIN = os.getenv("ACTION_EMOJI_MORE_120_MIN")
 
+
+def get_latest_version():
+    """
+    Retrieves the latest version from the specified URL.
+
+    Returns:
+        str: The latest version number.
+    """
+    try:
+        response = requests.get("https://raw.githubusercontent.com/phaticusthiccy/Telegram-Activity/master/sample.env")
+        response.raise_for_status()
+        for line in response.text.split("\n"):
+            if line.startswith("RUN="):
+                return line.split("=")[1].strip('"')
+    except requests.exceptions.RequestException as e:
+        print(f"Error retrieving latest version: {e}")
+    return None
 
 async def print_me():
     """
@@ -468,7 +486,7 @@ def add_placeholder(entry, placeholder):
         placeholder (str): The placeholder text to display.
     """
     entry.insert(0, placeholder)
-    entry.config(fg='grey')
+    entry.config(fg='grey', cursor="hand2")
 
     def on_focus_in(event):
         if entry.get() == placeholder:
@@ -482,6 +500,14 @@ def add_placeholder(entry, placeholder):
 
     entry.bind("<FocusIn>", on_focus_in)
     entry.bind("<FocusOut>", on_focus_out)
+
+def remove_all_games():
+    """
+    Removes all games from the games_listbox and the added_games list.
+    """
+    games_listbox.delete(0, tk.END)
+    added_games.clear()
+
 
 def show_list():
     """
@@ -514,6 +540,38 @@ def show_list():
                 listbox.insert(tk.END, display_text)
 
                 
+    def add_on_double_click(event):
+        """
+        Adds the double-clicked game from the listbox to the list of added games, and updates the games listbox accordingly.
+        """
+        try:
+            selected_game = listbox.get(listbox.curselection())
+        except:
+            return;
+        if selected_game:
+            try:
+                selected_game = selected_game.split(":: ")[1]
+            except:
+                return
+
+            if selected_game in added_games:
+                messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
+                return
+            else:
+                added_games.append(selected_game)
+                games_listbox.insert(tk.END, selected_game)
+                listbox.selection_clear(0, tk.END)
+                filter_list(None)
+
+    def add_all_games():
+        """
+        Adds all games from the process_name_mapping to the added_games list and the games_listbox.
+        """
+        for game in sorted_keys:
+            if game not in added_games:
+                added_games.append(game)
+                games_listbox.insert(tk.END, game)
+        list_window.destroy()
 
     list_window = tk.Toplevel(root)
     list_window.title(os.getenv("FRAME_GAME_LIST"))
@@ -522,19 +580,19 @@ def show_list():
 
 
     search_var = tk.StringVar()
-    search_entry = tk.Entry(list_frame, textvariable=search_var, font=("Helvetica", 12), width=50)
+    search_entry = tk.Entry(list_frame, textvariable=search_var, font=(poppins_font, 12), width=50)
     search_entry.grid(row=0, column=0, columnspan=2, pady=10)
     add_placeholder(search_entry, os.getenv("FRAME_HINT_PLACEHOLDER"))
     search_entry.bind("<KeyRelease>", filter_list)
 
     label_Text_Found_Games = os.getenv("FRAME_FOUND_GAMES")
     label_Text_Found_Games = label_Text_Found_Games.replace("#game_count", str(len(process_name_mapping)))
-    label = tk.Label(list_frame, text=label_Text_Found_Games, font=("Helvetica", 12))
+    label = tk.Label(list_frame, text=label_Text_Found_Games, font=(poppins_font, 12))
     label.grid(row=1, column=0, columnspan=2, pady=10)
 
-    listbox = tk.Listbox(list_frame, width=60, height=20, selectmode=tk.SINGLE)
+    listbox = tk.Listbox(list_frame, width=60, height=20, selectmode=tk.SINGLE, cursor="hand2")
     listbox.grid(row=2, column=0, columnspan=2, pady=10)
-
+    
     unique_keys = set()
     sorted_keys = sorted(process_name_mapping.keys())
 
@@ -574,8 +632,12 @@ def show_list():
                 filter_list(None)
 
     listbox.bind("<Return>", add_to_list)
+    listbox.bind("<Double-1>", add_on_double_click)
     add_button = tk.Button(list_frame, text=os.getenv("ADD"), command=add_to_list)
     add_button.grid(row=3, column=0, padx=10, pady=10)
+
+    add_all_button = tk.Button(list_frame, text=os.getenv("ADD_ALL"), command=add_all_games, font=(poppins_font, 12))
+    add_all_button.grid(row=3, column=2, padx=10, pady=10)
 
     close_button = tk.Button(list_frame, text=os.getenv("CLOSE"), command=list_window.destroy)
     close_button.grid(row=3, column=1, padx=10, pady=10)
@@ -629,9 +691,11 @@ root.iconphoto(False, icon)
 label_frame = tk.Frame(root)
 label_frame.pack(pady=0)
 
+poppins_font = tkfont.Font(family="/fonts/Poppins-Regular.ttf")
+
 welcome_label = os.getenv("WELCOME")
 welcome_label = welcome_label.replace("#firs_name", me_welcome.first_name)
-label = tk.Label(label_frame, text=welcome_label, font=("Helvetica", 15))
+label = tk.Label(label_frame, text=welcome_label, font=(poppins_font, 20))
 label.pack()
 
 frame = tk.Frame(root)
@@ -640,38 +704,53 @@ frame.pack(padx=40, pady=0)
 frame = tk.Frame(root)
 frame.pack(padx=40, pady=40)
 
-label = tk.Label(frame, text=os.getenv("ADD_GAME"), font=("Helvetica", 12))
+label = tk.Label(frame, text=os.getenv("ADD_GAME"), font=(poppins_font, 12))
 label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
 
-game_entry = tk.Entry(frame, width=30, font=("Helvetica", 12))
+game_entry = tk.Entry(frame, width=30, font=(poppins_font, 12), cursor="hand2")
 game_entry.grid(row=0, column=1, padx=5, pady=5)
 game_entry.bind("<Return>", add_game)
 
-add_button = tk.Button(frame, text=os.getenv("ADD_GAME_BUTTON"), command=add_game, font=("Helvetica", 12))
+add_button = tk.Button(frame, text=os.getenv("ADD_GAME_BUTTON"), command=add_game, font=(poppins_font, 12), cursor="hand2")
 add_button.grid(row=0, column=2, padx=5, pady=5)
 
-list_button = tk.Button(frame, text=os.getenv("LIST_OF_GAMES"), command=show_list, font=("Helvetica", 12))
+list_button = tk.Button(frame, text=os.getenv("LIST_OF_GAMES"), command=show_list, font=(poppins_font, 12), cursor="hand2")
 list_button.grid(row=0, column=3, padx=5, pady=5)
 
-games_listbox = tk.Listbox(frame, selectmode=tk.SINGLE, width=50, font=("Helvetica", 12))
+games_listbox = tk.Listbox(frame, selectmode=tk.SINGLE, width=50, font=(poppins_font, 12))
 games_listbox.grid(row=1, column=0, columnspan=4, padx=5, pady=5)
 games_listbox.bind("<Delete>", remove_game)
 
-remove_button = tk.Button(frame, text=os.getenv("DELETE"), command=remove_game, font=("Helvetica", 12))
+remove_button = tk.Button(frame, text=os.getenv("DELETE"), command=remove_game, font=(poppins_font, 12), cursor="hand2")
 remove_button.grid(row=2, column=0, padx=5, pady=5, sticky="ew")
 
-start_button = tk.Button(frame, text=os.getenv("RUN"), command=start_button_click, font=("Helvetica", 12))
-start_button.grid(row=2, column=1, columnspan=3, padx=5, pady=5, sticky="ew")
+remove_all_button = tk.Button(frame, text=os.getenv("DELETE_ALL"), command=remove_all_games, font=(poppins_font, 12), cursor="hand2")
+remove_all_button.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
 
-default_bio_label = tk.Label(frame, text=os.getenv("DEFAULT_BIO_LABEL"), font=("Helvetica", 12))
+start_button = tk.Button(frame, text=os.getenv("RUN"), command=start_button_click, font=(poppins_font, 12), cursor="hand2")
+start_button.grid(row=2, column=2, columnspan=2, padx=5, pady=5, sticky="ew")
+
+default_bio_label = tk.Label(frame, text=os.getenv("DEFAULT_BIO_LABEL"), font=(poppins_font, 12))
 default_bio_label.grid(row=3, column=0, sticky="w", padx=5, pady=5)
 
-default_bio_text = tk.Text(frame, width=50, height=4, font=("Helvetica", 12))
+default_bio_text = tk.Text(frame, width=50, height=4, font=(poppins_font, 12), cursor="hand2")
 default_bio_text.insert(tk.END, default_bio)
 default_bio_text.grid(row=3, column=1, columnspan=3, padx=5, pady=5)
+
 emoji_font = tkfont.Font(family="Segoe UI Emoji", size=12)
 emoji_font2 = tkfont.Font(family="Noto Color Emoji", size=12)
 default_bio_text.configure(font=emoji_font)
 default_bio_text.configure(font=emoji_font2)
+
+latest_version = get_latest_version()
+local_version = os.getenv("VERSION")
+
+"""
+Displays a warning message to the user if a newer version of the application is available.
+
+The message includes the latest version number and the current version number, and is displayed using the Tkinter messagebox.showwarning() function.
+"""
+if latest_version and local_version and str(latest_version) != str(local_version):
+    messagebox.showwarning(os.getenv("UPDATE_AVAILABLE"), os.getenv("UPDATE_AVAILABLE_MESSAGE").replace("#latest_version", latest_version).replace("#current_version", local_version))
 
 root.mainloop()
