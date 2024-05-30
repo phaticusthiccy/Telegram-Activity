@@ -290,7 +290,7 @@ async def update_status(game_name, elapsed_time, games):
                 game_name2 = item[0]
                 friendly_game_name2 = get_friendly_name(game_name2)
                 process_name2 = find_process_name(friendly_game_name2)
-                if process_name2 in process_name_mapping:
+                if process_name2.lower() in process_name_mapping:
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
                     text_start += "`" + friendly_game_name2 + "`\n"
                     
@@ -310,7 +310,7 @@ async def update_status(game_name, elapsed_time, games):
                 game_name2 = item[0]
                 friendly_game_name2 = get_friendly_name(game_name2)
                 process_name2 = find_process_name(friendly_game_name2)
-                if process_name2 in process_name_mapping:
+                if process_name2.lower() in process_name_mapping:
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
                     text_start += "`" + friendly_game_name2 + "`\n"
 
