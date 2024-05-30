@@ -295,7 +295,7 @@ async def update_status(game_name, elapsed_time, games):
             if len(text_start) > 3800:
                 text_start = text_start[:3800] + "..."
             try:
-                await client.send_message("me", os.getenv("START_MESSAGE") + text_start, parse_mode="Markdown")
+                await client.send_message("me", (os.getenv("START_MESSAGE").replace("#local_version", local_version)) + text_start, parse_mode="Markdown")
             except:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
@@ -315,7 +315,7 @@ async def update_status(game_name, elapsed_time, games):
             if len(text_start) > 3800:
                 text_start = text_start[:3800] + "..."
             try:
-                await client.send_message("me", os.getenv("START_MESSAGE") + text_start, parse_mode="Markdown")
+                await client.send_message("me", (os.getenv("START_MESSAGE").replace("#local_version", local_version)) + text_start, parse_mode="Markdown")
             except:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
@@ -742,6 +742,8 @@ emoji_font2 = tkfont.Font(family="Noto Color Emoji", size=12)
 default_bio_text.configure(font=emoji_font)
 default_bio_text.configure(font=emoji_font2)
 
+global latest_version
+global local_version
 latest_version = get_latest_version()
 local_version = os.getenv("VERSION")
 
