@@ -1,6 +1,9 @@
 # Telegram Status (Game Activity Monitor)
 
-[🇬🇧 English](README.md) // [🇹🇷 Türkçe](README.tr.md) 
+[<img src="https://images.emojiterra.com/openmoji/v15.0/512px/1f1ec-1f1e7.png" alt="English" width="30" height="30"> English](README.md)
+
+[<img src="https://images.emojiterra.com/openmoji/v15.0/512px/1f1f9-1f1f7.png" alt="Türkçe" width="30" height="30"> Türkçe](README.tr.md)
+
 
 ## Description
 
@@ -98,3 +101,34 @@ If you want to contribute, please send a pull request or open an issue. Any cont
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
+## Troubleshooting
+
+If you encounter any issues while using the application, you can try the following troubleshooting steps:
+
+### 1. Check Environment Variables
+Ensure that you have correctly set the required environment variables (`API_ID`, `API_HASH`, and `DEFAULT_BIO`). Double-check the values and make sure they are correct.
+
+### 2. Check Telegram Connection
+Make sure you have an active internet connection and that the Telegram servers are accessible. You can try sending a message to another Telegram user or group to verify your connection.
+
+### 3. Check Game List
+If the application is not detecting a game you're playing, ensure that the game is included in the `process_mapping.json` file. If not, you can add it by following the instructions in the "Contributing" section.
+
+### 4. Check Permissions
+On some systems, the application may require additional permissions to monitor running processes. Try running the application with administrative privileges.
+
+### 5. Check Logs
+The application logs errors and warnings to the console. Check the console output for any error messages or warnings that may provide clues about the issue you're facing.
+
+### 6. Update Dependencies
+Ensure that you have the latest versions of the required dependencies installed. You can update them by running the following command:
+
+```bash
+pip install -r requirements.txt --upgrade
+```
+
+### 7 Fix High CPU Usage
+CPU usage may be high for 10-30 seconds after the application runs. This may occur because the application is running in a way that requires access to games. Do not worry!
+
+This situation is only temporary. CPU usage will drop within 1 minute. If a persistently high CPU usage occurs, [follow the steps here!](https://github.com/phaticusthiccy/Telegram-Activity/wiki/High-CPU-Usage-Solution)

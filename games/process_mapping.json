@@ -23,7 +23,8 @@
     "SkyrimSE.exe": ["Skyrim Special Edition", "skyrim", "SkyrimSE.exe"],
     "BattlefrontII.exe": ["Star Wars Battlefront II", "battlefront", "BattlefrontII.exe"],
     "NFSHeat.exe": ["Need for Speed Heat", "nfs heat", "NFSHeat.exe"],
-    "Borderlands3.exe": ["Borderlands 3", "borderlands", "Borderlands3.exe"],
+    "Borderlands3.exe": ["Borderlands 3", "borderlands3", "borderlands 3", "Borderlands3.exe"],
+    "Borderlands2.exe": ["Borderlands 2", "borderlands2", "borderlands 2", "Borderlands2.exe"],
     "AssassinsCreedOdyssey.exe": ["Assassin's Creed Odyssey", "ac odyssey", "AssassinsCreedOdyssey.exe"],
     "FarCry5.exe": ["Far Cry 5", "far cry", "FarCry5.exe"],
     "MassEffectAndromeda.exe": ["Mass Effect: Andromeda", "mass effect", "MassEffectAndromeda.exe"],
@@ -160,5 +161,13 @@
     "DeadCells.exe": ["Dead Cells", "dead cells", "dead", "DeadCells.exe"],
     "Bioshock.exe": ["BioShock", "bioshock", "Bioshock.exe"],
     "StarWarsJFO.exe": ["Star Wars Jedi: Fallen Order", "star wars", "jedi fallen order", "jfo", "StarWarsJFO.exe"],
-    "HaloMCC.exe": ["Halo: The Master Chief Collection", "halo", "mcc", "HaloMCC.exe"]
+    "HaloMCC.exe": ["Halo: The Master Chief Collection", "halo", "mcc", "HaloMCC.exe"],
+    "eurotrucks2.exe": ["Euro Truck Simulator 2", "ets", "ets2", "euro truck", "eurotrucks2.exe"],
+    "Hammerwatch.exe": ["Hammerwatch", "hammer", "Hammerwatch.exe"],
+    "Unturned.exe": ["Unturned", "Unturned.exe"],
+    "arma2.exe": ["ArmA 2", "arma2", "arma 2", "arma2.exe"],
+    "arma3.exe": ["ArmA 3", "arma3", "arma", "arma 2", "arma3.exe"],
+    "ArmA2OA.exe": ["ArmA 2: Operation Arrowhead", "ArmA2OA.exe"],
+    "Star_Trek_Online.exe": ["Star Trek Online", "star trek online", "star trek", "Star_Trek_Online.exe"],
+    "BloodBowl2.exe": ["Blood Bowl 2", "blood bowl", "BloodBowl2.exe"]
 }

@@ -1,6 +1,8 @@
 # Telegram Durumu (Oyun Etkinliği Monitörü)
 
-[🇬🇧 English](README.md) // [🇹🇷 Türkçe](README.tr.md) 
+[<img src="https://images.emojiterra.com/openmoji/v15.0/512px/1f1ec-1f1e7.png" alt="English" width="30" height="30"> English](README.md)
+
+[<img src="https://images.emojiterra.com/openmoji/v15.0/512px/1f1f9-1f1f7.png" alt="Türkçe" width="30" height="30"> Türkçe](README.tr.md)
 
 ## Açıklama
 
@@ -82,7 +84,7 @@ GUI uygulamasını çalıştırmak için gui.py dosyasını kullanın:
 ![After](src/after_tr.png)
 
 
-## Katkı
+## Katkıda Bulunma
 Katkıda bulunmak istiyorsanız lütfen pull request gönderin veya konu açın. Her türlü katkı memnuniyetle karşılanır!
 
 ⚠ Not :: Bu proje hala geliştirme aşamasında olduğundan bazı hatalar olabilir. Eğer bulursanız lütfen bunları bildirin. Ayrıca oyun listesine daha fazla oyun eklemek istiyorsanız aşağıdaki yöntemi kullanın. Değişiklik yapın, çekme isteği oluşturun ve sorun olmazsa birleştireceğim!
@@ -96,3 +98,34 @@ Katkıda bulunmak istiyorsanız lütfen pull request gönderin veya konu açın.
 
 ## Lisans
 Bu proje [MIT Lisansı](LICENSE.tr.md) kapsamında lisanslanmıştır.
+
+## Sorun Giderme
+
+Uygulamayı kullanırken herhangi bir sorunla karşılaşırsanız, aşağıdaki sorun giderme adımlarını deneyebilirsiniz:
+
+### 1. Ortam Değişkenlerini Kontrol Edin
+Gerekli ortam değişkenlerinin (`API_ID`, `API_HASH` ve `DEFAULT_BIO`) doğru şekilde ayarlandığından emin olun. Değerleri tekrar kontrol edin ve doğru olduklarından emin olun.
+
+### 2. Telegram Bağlantısını Kontrol Edin
+Aktif bir internet bağlantınız olduğundan ve Telegram sunucularına erişilebildiğinden emin olun. Bağlantınızı doğrulamak için başka bir Telegram kullanıcısına veya grubuna mesaj göndermeyi deneyebilirsiniz.
+
+### 3. Oyun Listesini Kontrol Edin
+Uygulamanın oynadığınız bir oyunu algılayamadığı durumlarda, oyunun `process_mapping.json` dosyasında bulunduğundan emin olun. Yoksa, "Katkıda Bulunma" bölümündeki talimatları izleyerek ekleyebilirsiniz.
+
+### 4. İzinleri Kontrol Edin
+Bazı sistemlerde, uygulamanın çalışan işlemleri izlemek için ek izinlere ihtiyacı olabilir. Uygulamayı yönetici ayrıcalıklarıyla çalıştırmayı deneyin.
+
+### 5. Günlükleri Kontrol Edin
+Uygulama, hataları ve uyarıları konsola kaydeder. Karşılaştığınız soruna ipucu verebilecek hata mesajları veya uyarılar olup olmadığını kontrol edin.
+
+### 6. Bağımlılıkları Güncelleyin
+Gerekli bağımlılıkların en son sürümlerinin yüklü olduğundan emin olun. Aşağıdaki komutu çalıştırarak bunları güncelleyebilirsiniz:
+
+```bash
+pip install -r requirements.txt --upgrade
+```
+
+### 7 Yüksek CPU Kullanımını Düzeltme
+Uygulama çalıştırıldıkten sonra 10-30 saniye boyunca CPU kullanımı yüksek olabilir. Bu durum, uygulama oyunlarına erişim gerektiren bir şekilde çalıştığından oluşabilir. Endişelenmeyin!
+
+Bu durum sadece geçicidir. 1 dakika içinde CPU kullanımı düşecektir. CPU tarafından sürekli yüksek bir kullanım durumu oluşursa, [buradaki adımları takip edin!](https://github.com/phaticusthiccy/Telegram-Activity/wiki/Y%C3%BCksek-CPU-Kullan%C4%B1m%C4%B1-%C3%87%C3%B6z%C3%BCm%C3%BC)

@@ -61,7 +61,6 @@ ACTION_EMOJI_60_TO_120_MIN = os.getenv("ACTION_EMOJI_60_TO_120_MIN")
 ACTION_EMOJI_MORE_120_MIN = os.getenv("ACTION_EMOJI_MORE_120_MIN")
 global latest_version
 global local_version
-local_version = os.getenv("VERSION")
 
 def get_latest_version():
     """
@@ -97,6 +96,8 @@ def checkAuth():
     Returns:
         bool: True if all required configuration values are set, False otherwise.
     """
+    if not os.path.isfile(".env"):
+        raise ValueError("The .env file is missing!")
     if api_id is None or api_id == "":
         raise ValueError(os.getenv("APP_ID_MISSING"))
     if api_hash is None or api_hash == "":
@@ -108,6 +109,8 @@ def checkAuth():
     return True;
 
 checkAuth()
+print(os.getenv("LOADING_MESSAGE"))
+local_version = os.getenv("VERSION")
 
 def is_supported_os():
     """
@@ -264,28 +267,15 @@ def is_any_game_running(game_names):
     return None
 
 async def update_status(game_name, elapsed_time, games):
-    """
-    Asynchronously updates the user's Telegram profile status based on the current game being played and the elapsed time.
-    
-    If no game is being played, the profile status is set to the default bio. Otherwise, the profile status is updated to show the name of the current game and the elapsed time playing it.
-    
-    The function also sends a message to the user's Telegram account with a list of the games that will trigger a profile status update.
-    """
-    await client.connect()
     global start
-    if game_name == False and elapsed_time == False:
 
-        """
-        Updates the user's profile with the default biography.
-        
-        Attempts to update the user's profile with the default biography using the `UpdateProfileRequest` method from the Telegram client. If an exception occurs during the update, it is silently ignored.
-        """
+    if game_name is False and elapsed_time is False:
         try:
             await client(UpdateProfileRequest(about=default_bio))
-        except:
-            pass;
+        except Exception as e:
+            print(os.getenv("ERROR_UPDATE_DEFAULT_BIO", e))
 
-        if start == False:
+        if not start:
             start = True
             text_start = ""
             for item in games:
@@ -295,17 +285,18 @@ async def update_status(game_name, elapsed_time, games):
                 if any(key.lower() == process_name2.lower() for key in process_name_mapping):
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
                     text_start += "`" + friendly_game_name2 + "`\n"
-                    
+
             if len(text_start) > 3800:
                 text_start = text_start[:3800] + "..."
             try:
                 await client.send_message("me", (os.getenv("START_MESSAGE").replace("#local_version", local_version)) + text_start, parse_mode="Markdown")
-            except:
+            except Exception as e:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
+                print(os.getenv("ERROR_START_MESSAGE"), e)
                 return handle_exit(None, None)
-    else: 
-        if start == False:
+    else:
+        if not start:
             start = True
             text_start = ""
             for item in games:
@@ -320,9 +311,10 @@ async def update_status(game_name, elapsed_time, games):
                 text_start = text_start[:3800] + "..."
             try:
                 await client.send_message("me", (os.getenv("START_MESSAGE").replace("#local_version", local_version)) + text_start, parse_mode="Markdown")
-            except:
+            except Exception as e:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
+                print(os.getenv("ERROR_START_MESSAGE"), e)
                 return handle_exit(None, None)
 
         friendly_game_name = get_friendly_name(game_name)
@@ -331,38 +323,53 @@ async def update_status(game_name, elapsed_time, games):
 
         if elapsed_time < 10:
             action_emoji = ACTION_EMOJI_LESS_10_MIN
-        elif elapsed_time > 9 and elapsed_time < 60:
+        elif 9 < elapsed_time < 60:
             action_emoji = ACTION_EMOJI_10_TO_60_MIN
-        elif elapsed_time > 59 and elapsed_time < 120:
+        elif 59 < elapsed_time < 120:
             action_emoji = ACTION_EMOJI_60_TO_120_MIN
-        elif elapsed_time > 119:
+        else:
             action_emoji = ACTION_EMOJI_MORE_120_MIN
         
-        new_status = os.getenv("ACTION_STATUS")
-        new_status = new_status.replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name).replace("#elapsed_time", str(elapsed_time + 1))
+        new_status = os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name).replace("#elapsed_time", str(elapsed_time + 1))
         try:
             await client(UpdateProfileRequest(about=new_status))
-        except:
+        except Exception as e:
             messagebox.showerror(os.getenv("ERROR"), os.getenv("TOO_LONG"))
+            print(os.getenv("TOO_LONG"), e)
             root.quit()
             sys.exit()
-        
-    await client.disconnect()
-
+            
 async def main(games, root):
     """
-    Runs the main event loop for the GUI, updating the status of any running games.
+    Continuously monitors a list of games and updates the status of the currently running game.
     
-    This function is responsible for the core logic of the GUI application. It continuously checks if any games are running, and if so, updates the elapsed time for the currently running game. If no games are running, it updates the status to indicate that.
-    
-    The function runs in an asynchronous event loop, sleeping for 60 seconds between each check for running games. It also periodically updates the GUI's main window to ensure the UI stays responsive.
+    This function runs in an event loop and checks every `check_interval` seconds if any of the provided games are currently running. If a game is running, it updates the elapsed time for that game. If no game is running, it updates the status to indicate that no game is running.
     
     Args:
-        games (dict): A dictionary of running games, where the keys are game names and the values are game objects.
-        root (tkinter.Tk): The main window of the GUI application.
+        games (list): A list of game objects to monitor.
+        root (tkinter.Tk): The root Tkinter window object.
+    
+    Returns:
+        None
     """
+
+    """
+    Finds the running Python process and sets its priority to the IDLE_PRIORITY_CLASS.
+    
+    This code iterates through all running processes using the `psutil.process_iter()` function, and looks for a process with the name 'python.exe'. Once found, it sets the priority of that process to the IDLE_PRIORITY_CLASS, which will cause the Python process to run at a lower priority than other processes on the system.
+    
+    This can be useful for long-running Python scripts or applications that should not consume too many system resources, allowing other important processes to run without being impacted.
+    """
+    for proc in psutil.process_iter(['name', 'exe', 'username']):
+        if proc.info['name'] == 'python.exe':
+            python_process = proc
+            break
+
+    python_process.nice(psutil.IDLE_PRIORITY_CLASS)
+
     start_time = None
     current_game = None
+    check_interval = 60
 
     while True:
         game_name = is_any_game_running(games)
@@ -377,7 +384,7 @@ async def main(games, root):
             start_time = None
             current_game = None
         
-        await asyncio.sleep(60)  
+        await asyncio.sleep(check_interval) 
         root.update_idletasks()
         root.update()
 
