@@ -59,7 +59,9 @@ ACTION_EMOJI_LESS_10_MIN = os.getenv("ACTION_EMOJI_LESS_10_MIN")
 ACTION_EMOJI_10_TO_60_MIN = os.getenv("ACTION_EMOJI_10_TO_60_MIN")
 ACTION_EMOJI_60_TO_120_MIN = os.getenv("ACTION_EMOJI_60_TO_120_MIN")
 ACTION_EMOJI_MORE_120_MIN = os.getenv("ACTION_EMOJI_MORE_120_MIN")
-
+global latest_version
+global local_version
+local_version = os.getenv("VERSION")
 
 def get_latest_version():
     """
@@ -290,7 +292,7 @@ async def update_status(game_name, elapsed_time, games):
                 game_name2 = item[0]
                 friendly_game_name2 = get_friendly_name(game_name2)
                 process_name2 = find_process_name(friendly_game_name2)
-                if process_name2.lower() in process_name_mapping:
+                if any(key.lower() == process_name2.lower() for key in process_name_mapping):
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
                     text_start += "`" + friendly_game_name2 + "`\n"
                     
@@ -310,7 +312,7 @@ async def update_status(game_name, elapsed_time, games):
                 game_name2 = item[0]
                 friendly_game_name2 = get_friendly_name(game_name2)
                 process_name2 = find_process_name(friendly_game_name2)
-                if process_name2.lower() in process_name_mapping:
+                if any(key.lower() == process_name2.lower() for key in process_name_mapping):
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
                     text_start += "`" + friendly_game_name2 + "`\n"
 
@@ -684,7 +686,7 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(print_me())
 
 root = tk.Tk()
-root.title(os.getenv("APP_TITLE"))
+root.title(f"{os.getenv('APP_TITLE')} v{local_version}")
 icon_image = Image.open(str(app_icon))
 icon_image = icon_image.convert('RGBA')
 icon = ImageTk.PhotoImage(icon_image)
@@ -744,10 +746,8 @@ emoji_font2 = tkfont.Font(family="Noto Color Emoji", size=12)
 default_bio_text.configure(font=emoji_font)
 default_bio_text.configure(font=emoji_font2)
 
-global latest_version
-global local_version
+
 latest_version = get_latest_version()
-local_version = os.getenv("VERSION")
 
 """
 Displays a warning message to the user if a newer version of the application is available.
