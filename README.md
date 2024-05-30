@@ -71,8 +71,8 @@ To run the GUI application, use the gui.py file:
 
 ## Demo
 
-![Main Menu](src/main_page.png)
-![Game List](src/game_list.png)
+![Main Menu](src/main_page_en.png)
+![Game List](src/game_list_en.png)
 
 
 ### Before (When you close the game, your bio will be replaced with the default bio!) 
@@ -81,7 +81,7 @@ To run the GUI application, use the gui.py file:
 
 ### After
 
-![After](src/after.png)
+![After](src/after_en.png)
 
 
 ## Contributing

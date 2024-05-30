@@ -95,15 +95,17 @@ def checkAuth():
     Returns:
         bool: True if all required configuration values are set, False otherwise.
     """
-    if api_id is None:
+    if api_id is None or api_id == "":
         raise ValueError(os.getenv("APP_ID_MISSING"))
-    if api_hash is None:
+    if api_hash is None or api_hash == "":
         raise ValueError(os.getenv("APP_HASH_MISSING"))
-    if default_bio is None:
+    if default_bio is None or default_bio == "":
         raise ValueError(os.getenv("DEFAULT_BIO_MISSING"))
-    if app_icon is None:
+    if app_icon is None or app_icon == "":
         raise ValueError(os.getenv("APP_ICON_MISSING"))
     return True;
+
+checkAuth()
 
 def is_supported_os():
     """

@@ -70,8 +70,8 @@ GUI uygulamasını çalıştırmak için gui.py dosyasını kullanın:
 
 ## Demo
 
-![Ana Menü](src/main_page.png)
-![Oyun Listesi](src/game_list.png)
+![Ana Menü](src/main_page_tr.png)
+![Oyun Listesi](src/game_list_tr.png)
 
 ### Önce (Oyunu kapattığınızda biyografiniz varsayılan biyografiyle değiştirilecektir!)
 
@@ -79,7 +79,7 @@ GUI uygulamasını çalıştırmak için gui.py dosyasını kullanın:
 
 ### Sonra
 
-![After](src/after.png)
+![After](src/after_tr.png)
 
 
 ## Katkı
