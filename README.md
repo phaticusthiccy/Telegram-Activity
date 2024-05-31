@@ -30,6 +30,7 @@ The following libraries are required for the project to run:
 - `pyinstaller`
 - `pillow`
 - `requests`
+- `sv_ttk`
 
 You can install these dependencies using the `requirements.txt` file:
 
@@ -128,7 +129,7 @@ Ensure that you have the latest versions of the required dependencies installed.
 pip install -r requirements.txt --upgrade
 ```
 
-### 7 Fix High CPU Usage
+### 7. Fix High CPU Usage
 CPU usage may be high for 10-30 seconds after the application runs. This may occur because the application is running in a way that requires access to games. Do not worry!
 
 This situation is only temporary. CPU usage will drop within 1 minute. If a persistently high CPU usage occurs, [follow the steps here!](https://github.com/phaticusthiccy/Telegram-Activity/wiki/High-CPU-Usage-Solution)

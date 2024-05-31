@@ -6,3 +6,4 @@ python-dotenv
 pyinstaller
 pillow
 requests
+sv_ttk

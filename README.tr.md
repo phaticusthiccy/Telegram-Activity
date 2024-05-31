@@ -27,6 +27,7 @@ Projenin çalışması için aşağıdaki kütüphaneler gereklidir:
 - `pyinstaller`
 - `pillow`
 - `requests`
+- `sv_ttk`
 
 Bu bağımlılıkları `requirements.txt` dosyasını kullanarak yükleyebilirsiniz:
 
@@ -125,7 +126,7 @@ Gerekli bağımlılıkların en son sürümlerinin yüklü olduğundan emin olun
 pip install -r requirements.txt --upgrade
 ```
 
-### 7 Yüksek CPU Kullanımını Düzeltme
+### 7. Yüksek CPU Kullanımını Düzeltme
 Uygulama çalıştırıldıkten sonra 10-30 saniye boyunca CPU kullanımı yüksek olabilir. Bu durum, uygulama oyunlarına erişim gerektiren bir şekilde çalıştığından oluşabilir. Endişelenmeyin!
 
 Bu durum sadece geçicidir. 1 dakika içinde CPU kullanımı düşecektir. CPU tarafından sürekli yüksek bir kullanım durumu oluşursa, [buradaki adımları takip edin!](https://github.com/phaticusthiccy/Telegram-Activity/wiki/Y%C3%BCksek-CPU-Kullan%C4%B1m%C4%B1-%C3%87%C3%B6z%C3%BCm%C3%BC)

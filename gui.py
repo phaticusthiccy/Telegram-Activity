@@ -44,6 +44,7 @@ import os
 import platform
 from PIL import Image, ImageTk
 import requests
+import sv_ttk
 
 
 load_dotenv()
@@ -498,11 +499,14 @@ def add_placeholder(entry, placeholder):
     """
     entry.insert(0, placeholder)
     entry.config(fg='grey', cursor="hand2")
-
+    global theme
     def on_focus_in(event):
         if entry.get() == placeholder:
             entry.delete(0, tk.END)
-            entry.config(fg='blue')
+            if theme == 1:
+                entry.config(fg='blue')
+            else:
+                entry.config(fg='yellow')
 
     def on_focus_out(event):
         if entry.get() == '':
@@ -656,8 +660,55 @@ def show_list():
     list_window.resizable(False, False)
 
 
+theme = 0
+def change_theme():
+    """
+    Changes the theme of the application between light and dark mode.
+    """
+    global theme
+    if theme == 0:
+        theme = 1
+        sv_ttk.set_theme("light")
+        show_toast(os.getenv("CHANGE_THEMA_LIGHT_MODE"))
+    else:
+        theme = 0
+        sv_ttk.set_theme("dark")
+        show_toast(os.getenv("CHANGE_THEMA_DARK_MODE"))
 
-"""
+def show_toast(message, duration=5000):
+    """
+    Displays a toast notification on the screen for a specified duration.
+    
+    Args:
+        message (str): The message to display in the toast notification.
+        duration (int, optional): The duration of the toast notification in milliseconds. Defaults to 5000 (5 seconds).
+    """
+    toast = tk.Toplevel(root)
+    toast.overrideredirect(True)  
+    toast.geometry("+500+400") 
+
+    bg_color = "white"
+    fg_color = "black"
+    if (theme == 1):
+        bg_color = "black"
+        fg_color = "white"
+    toast_label = tk.Label(toast, text=message, bg=bg_color, fg=fg_color, padx=20, pady=10)
+    toast_label.pack()
+
+    def start_fade(window, remaining_time):
+        for alpha in range(10, -1, -1):
+            alpha /= 10 
+            window.attributes("-alpha", alpha)
+            window.update()
+            window.after(remaining_time // 10)  
+
+        window.destroy()
+
+    toast.after(2000, start_fade, toast, duration - 4800)
+
+    
+
+""""
 Loads the process mapping from a JSON file located at the specified path.
 
 Args:
@@ -698,6 +749,8 @@ icon_image = Image.open(str(app_icon))
 icon_image = icon_image.convert('RGBA')
 icon = ImageTk.PhotoImage(icon_image)
 root.iconphoto(False, icon)
+
+sv_ttk.set_theme("dark")
 
 label_frame = tk.Frame(root)
 label_frame.pack(pady=0)
@@ -748,11 +801,13 @@ default_bio_text = tk.Text(frame, width=50, height=4, font=(poppins_font, 12), c
 default_bio_text.insert(tk.END, default_bio)
 default_bio_text.grid(row=3, column=1, columnspan=3, padx=5, pady=5)
 
+chthema = tk.Button(frame, text=os.getenv("CHANGE_THEMA_LABEL"), command=change_theme, font=(poppins_font, 12), cursor="hand2")
+chthema.grid(row=4, column=0, columnspan=4, padx=5, pady=5)
+
 emoji_font = tkfont.Font(family="Segoe UI Emoji", size=12)
 emoji_font2 = tkfont.Font(family="Noto Color Emoji", size=12)
 default_bio_text.configure(font=emoji_font)
 default_bio_text.configure(font=emoji_font2)
-
 
 latest_version = get_latest_version()
 
