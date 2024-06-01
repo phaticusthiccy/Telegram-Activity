@@ -91,6 +91,8 @@ To run the GUI application, use the gui.py file:
 ## Contributing
 If you want to contribute, please send a pull request or open an issue. Any contributions are welcome!
 
+> [You can create a request for a new game by clicking here!](https://github.com/phaticusthiccy/Telegram-Activity/issues/new?assignees=phaticusthiccy&labels=enhancement%2C+game+request&projects=&template=new-game-request.md&title=%5BREQUEST%5D+New+Game+Request)
+
 ⚠ Note :: This project is still in development, so there might be some bugs. Please report them if you find any. Also if you wan to add more games to the game list use method below. Make changes, create pull request and I'll merge it if its ok!
 
 ```json

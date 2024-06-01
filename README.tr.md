@@ -88,6 +88,8 @@ GUI uygulamasını çalıştırmak için gui.py dosyasını kullanın:
 ## Katkıda Bulunma
 Katkıda bulunmak istiyorsanız lütfen pull request gönderin veya konu açın. Her türlü katkı memnuniyetle karşılanır!
 
+> [Buraya tıklayarak yeni bir oyun için istek oluşturabilirsiniz!](https://github.com/phaticusthiccy/Telegram-Activity/issues/new?assignees=phaticusthiccy&labels=enhancement%2C+game+request&projects=&template=new-game-request.md&title=%5BREQUEST%5D+New+Game+Request)
+
 ⚠ Not :: Bu proje hala geliştirme aşamasında olduğundan bazı hatalar olabilir. Eğer bulursanız lütfen bunları bildirin. Ayrıca oyun listesine daha fazla oyun eklemek istiyorsanız aşağıdaki yöntemi kullanın. Değişiklik yapın, çekme isteği oluşturun ve sorun olmazsa birleştireceğim!
 
 ```json
