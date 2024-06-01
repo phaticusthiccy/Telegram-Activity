@@ -28,7 +28,6 @@ The main function is the core of the application, running in an asynchronous eve
 The code also includes helper functions for handling user input, displaying messages, and managing the GUI window.
 """
 
-
 import asyncio
 import psutil
 import sys
@@ -45,7 +44,19 @@ import platform
 from PIL import Image, ImageTk
 import requests
 import sv_ttk
+import logging
 
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler('./debug/debug.log')
+file_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
 
 load_dotenv()
 added_games = []
@@ -65,20 +76,30 @@ global local_version
 
 def get_latest_version():
     """
-    Retrieves the latest version from the specified URL.
-
+    Retrieves the latest version information from a remote source.
+    
     Returns:
-        str: The latest version number.
+        dict: A dictionary containing the latest version and update message, or None if an error occurred.
     """
     try:
         response = requests.get("https://raw.githubusercontent.com/phaticusthiccy/Telegram-Activity/master/sample.env")
         response.raise_for_status()
+        message_payload = {
+            version: "",
+            message: ""
+        }
         for line in response.text.split("\n"):
             if line.startswith("VERSION="):
-                return line.split("=")[1].strip('"')
+                version = line.split("=")[1].strip('"')
+            if line.startswith("UPDATE_MESSAGE="):
+                message = line.split("=")[1].strip('"')
+        return message_payload
     except requests.exceptions.RequestException as e:
-        print(f"Error retrieving latest version: {e}")
-    return None
+        logger.error(f"Error retrieving latest version: {e}")
+    return {
+        version: "",
+        message: ""
+    }
 
 async def print_me():
     """
@@ -110,8 +131,12 @@ def checkAuth():
     return True;
 
 checkAuth()
-print(os.getenv("LOADING_MESSAGE"))
+logger.info(os.getenv("LOADING_MESSAGE"))
+logger.info(os.getenv("DEBUG_ON")) if os.getenv("DEBUG") == "true" else None
+
 local_version = os.getenv("VERSION")
+logger.info(os.getenv("DEBUG_VERSION") + local_version) if os.getenv("DEBUG") == "true" else None
+
 
 def is_supported_os():
     """
@@ -121,7 +146,9 @@ def is_supported_os():
         bool: True if the operating system is Windows, Linux or macOS, False otherwise.
     """
     system = platform.system().lower()
+    logger.info(os.getenv("DEBUG_SYSTEM") + system) if os.getenv("DEBUG") == "true" else None
     return system == "windows" or system == "linux" or system == "darwin"
+
 
 def load_process_mapping(file_path):
     """
@@ -144,7 +171,11 @@ def handle_exit(signum, frame):
     When the application receives an exit signal (e.g. from the user closing the window),
     this function is called to quit the main event loop and exit the application.
     """
-    root.quit()
+    try:
+        root.quit()
+    except:
+        pass
+    logger.info(os.getenv("DEBUG_LOGOUT") + local_version) if os.getenv("DEBUG") == "true" else None
     sys.exit()
     
 def capitalize_first_letters(text):
@@ -262,10 +293,12 @@ def is_any_game_running(game_names):
     Returns:
         str or None: The name of the first game found to be running, or None if no games are running.
     """
+    running_processes = [proc.info['name'].lower() for proc in psutil.process_iter(['name'])]
     for game_name in game_names:
-        if is_game_running(game_name):
+        if any(name.lower() in running_processes for name in game_name):
             return game_name[0]
     return None
+
 
 async def update_status(game_name, elapsed_time, games):
     global start
@@ -274,7 +307,8 @@ async def update_status(game_name, elapsed_time, games):
         try:
             await client(UpdateProfileRequest(about=default_bio))
         except Exception as e:
-            print(os.getenv("ERROR_UPDATE_DEFAULT_BIO", e))
+            logger.warn(os.getenv("ERROR_UPDATE_DEFAULT_BIO"))
+            logger.critical(e) if os.getenv("DEBUG") == "true" else None
 
         if not start:
             start = True
@@ -291,10 +325,12 @@ async def update_status(game_name, elapsed_time, games):
                 text_start = text_start[:3800] + "..."
             try:
                 await client.send_message("me", (os.getenv("START_MESSAGE").replace("#local_version", local_version)) + text_start, parse_mode="Markdown")
+                logger.info(os.getenv("DEBUG_START"))
             except Exception as e:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
-                print(os.getenv("ERROR_START_MESSAGE"), e)
+                logger.warn(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
+                logger.critical(e) if os.getenv("DEBUG") == "true" else None
                 return handle_exit(None, None)
     else:
         if not start:
@@ -312,10 +348,12 @@ async def update_status(game_name, elapsed_time, games):
                 text_start = text_start[:3800] + "..."
             try:
                 await client.send_message("me", (os.getenv("START_MESSAGE").replace("#local_version", local_version)) + text_start, parse_mode="Markdown")
+                logger.info(os.getenv("DEBUG_START")) if os.getenv("DEBUG") == "true" else None
             except Exception as e:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
-                print(os.getenv("ERROR_START_MESSAGE"), e)
+                logger.warn(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
+                logger.critical(e) if os.getenv("DEBUG") == "true" else None
                 return handle_exit(None, None)
 
         friendly_game_name = get_friendly_name(game_name)
@@ -334,13 +372,15 @@ async def update_status(game_name, elapsed_time, games):
         new_status = os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name).replace("#elapsed_time", str(elapsed_time + 1))
         try:
             await client(UpdateProfileRequest(about=new_status))
+            logger.info(os.getenv("DEBUG_PLAYING") + friendly_game_name + os.getenv("DEBUG_PLAYTIME") + str(elapsed_time + 1)) if os.getenv("DEBUG") == "true" else None
         except Exception as e:
             messagebox.showerror(os.getenv("ERROR"), os.getenv("TOO_LONG"))
-            print(os.getenv("TOO_LONG"), e)
+            logger.warn(os.getenv("TOO_LONG")) if os.getenv("DEBUG") == "true" else None
+            logger.critical(e) if os.getenv("DEBUG") == "true" else None
             root.quit()
             sys.exit()
             
-async def main(games, root):
+async def main(games):
     """
     Continuously monitors a list of games and updates the status of the currently running game.
     
@@ -348,7 +388,6 @@ async def main(games, root):
     
     Args:
         games (list): A list of game objects to monitor.
-        root (tkinter.Tk): The root Tkinter window object.
     
     Returns:
         None
@@ -363,15 +402,16 @@ async def main(games, root):
     """
     for proc in psutil.process_iter(['name', 'exe', 'username']):
         if proc.info['name'] == 'python.exe':
-            python_process = proc
-            break
-
-    python_process.nice(psutil.IDLE_PRIORITY_CLASS)
+            try: 
+                proc.nice(psutil.IDLE_PRIORITY_CLASS)
+                logger.debug(os.getenv("DEBUG_SET_LOW_PRIORITY")) if os.getenv("DEBUG") == "true" else None
+                break  
+            except:
+                False
 
     start_time = None
     current_game = None
     check_interval = 60
-
     while True:
         game_name = is_any_game_running(games)
         if game_name:
@@ -384,21 +424,18 @@ async def main(games, root):
             await update_status(False, False, games)
             start_time = None
             current_game = None
-        
-        await asyncio.sleep(check_interval) 
-        root.update_idletasks()
-        root.update()
 
-def start_monitoring(games, root):
+        await asyncio.sleep(check_interval)
+
+def start_monitoring(games):
     """
     Starts the main event loop and creates a task to run the main application logic.
     
     Args:
         games (list): A list of game objects to monitor.
-        root (tkinter.Tk): The root Tkinter window for the application.
     """
     loop = asyncio.get_event_loop()
-    loop.create_task(main(games, root))
+    loop.create_task(main(games))
     loop.run_forever()
 
 def add_game(event=None):
@@ -417,16 +454,20 @@ def add_game(event=None):
     if friendly_name:
         process_names = get_process_name(friendly_name)
         if process_names in added_games:
-            messagebox.showerror(os.getenv("ERROR"), "This game has already been added!")
+            messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
+            logger.debug(os.getenv("ALREADY_ADDED") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
             return
         added_games.append(process_names)
         findgame = find_process_name(process_names)
         if findgame == False:
-            return messagebox.showwarning(os.getenv("WARNING"), "This game is not in the database!")
+            logger.debug(os.getenv("NOT_IN_DATABASE") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
+            return messagebox.showwarning(os.getenv("WARNING"), os.getenv("NOT_IN_DATABASE"))
         games_listbox.insert(tk.END, process_names)
         game_entry.delete(0, tk.END)
+        logger.info(os.getenv("DEBUG_GAME_ADDED") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
     else:
         messagebox.showwarning(os.getenv("WARNING"), os.getenv("VALID_GAME_NAME"))
+        logger.debug(os.getenv("DEBUG_VALID_NAME") + " - " + friendly_name) if os.getenv("DEBUG") == "true" else None
 
 def remove_game(arg=None):
     """
@@ -440,8 +481,10 @@ def remove_game(arg=None):
         games_listbox.delete(selected_game)
         if game_to_remove in added_games:
             added_games.remove(game_to_remove)
+            logger.info(os.getenv("DEBUG_GAME_REMOVED") + " - " + game_to_remove) if os.getenv("DEBUG") == "true" else None
     else:
         messagebox.showwarning(os.getenv("WARNING"), os.getenv("SELECT_GAME_TO_DEL"))
+        logger.debug(os.getenv("DEBUG_DELETE_GAME")) if os.getenv("DEBUG") == "true" else None
 
 def start_button_click():
     """
@@ -449,22 +492,26 @@ def start_button_click():
     
     This function is called when the user clicks the "Start" button in the GUI. It retrieves the list of games selected in the listbox, checks if the default biography is within the character limit, and then starts the game monitoring process. If no games are selected, it displays a warning message.
     """
-    if not is_supported_os():
-        print(os.getenv("UNSUPPORTED_OS"))
-        return
 
     games = [tuple(games_listbox.get(i).split(", ")) for i in range(games_listbox.size())]
     if games:
         global default_bio
         default_bio = default_bio_text.get("1.0", tk.END)
         if len(default_bio) > 70:
-            messagebox.showerror(os.getenv("ERROR"), "The default bio cannot be more than 70 characters!")
+            messagebox.showerror(os.getenv("ERROR"), os.getenv("DEFAULT_BIO_MAX_LENGTH"))
+            logger.error(os.getenv("DEBUG_DEFAULT_BIO_IS_TOO_LONG") + " - " + default_bio) if os.getenv("DEBUG") == "true" else None
             return
         messagebox.showinfo(os.getenv("STARTED"), os.getenv("STARTED_MESSAGE"))
+        logger.info(os.getenv("STARTED_MESSAGE")) if os.getenv("DEBUG") == "true" else None
         root.destroy()
-        print(os.getenv("CONSOLE_START_MESSAGE"))
-        start_monitoring(games, root)
+        try:
+            root.quit()
+        except:
+            pass
+        logger.info(os.getenv("CONSOLE_START_MESSAGE"))
+        start_monitoring(games)
     else:
+        logger.warn(os.getenv("DEBUG_EMPTY_GAME_LIST")) if os.getenv("DEBUG") == "true" else None
         messagebox.showwarning(os.getenv("WARNING"), os.getenv("ADD_AT_LEAST_ONE_GAME"))
 
 def add_game_to_list(process_name, list_window):
@@ -480,9 +527,11 @@ def add_game_to_list(process_name, list_window):
     """
     def add_to_list():
         if process_name in added_games:
+            logger.debug(os.getenv("DEBUG_ALREADY_ADDED") + " - " + process_name) if os.getenv("DEBUG") == "true" else None
             messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
             return
         else:
+            logger.info(os.getenv("DEBUG_GAME_ADDED") + " - " + process_name) if os.getenv("DEBUG") == "true" else None
             added_games.append(process_name)
             games_listbox.insert(tk.END, process_name)
             list_window.destroy()
@@ -522,7 +571,7 @@ def remove_all_games():
     """
     games_listbox.delete(0, tk.END)
     added_games.clear()
-
+    logger.info(os.getenv("DEBUG_ALL_GAMES_REMOVED")) if os.getenv("DEBUG") == "true" else None
 
 def show_list():
     """
@@ -547,6 +596,7 @@ def show_list():
         if search_term == os.getenv("FRAME_HINT_PLACEHOLDER").lower():
             search_term = None
         listbox.delete(0, tk.END)
+        logger.debug(os.getenv("DEBUG_SEARCH_QUERY") + " - " + search_term) if (os.getenv("DEBUG") == "true" and search_term is not None) else None
         for key in sorted_keys:
             if key in added_games:
                 continue
@@ -570,9 +620,11 @@ def show_list():
                 return
 
             if selected_game in added_games:
+                logger.debug(os.getenv("DEBUG_ALREADY_ADDED") + " - " + selected_game) if os.getenv("DEBUG") == "true" else None
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
                 return
             else:
+                logger.info(os.getenv("DEBUG_GAME_ADDED") + " - " + selected_game) if os.getenv("DEBUG") == "true" else None
                 added_games.append(selected_game)
                 games_listbox.insert(tk.END, selected_game)
                 listbox.selection_clear(0, tk.END)
@@ -586,6 +638,7 @@ def show_list():
             if game not in added_games:
                 added_games.append(game)
                 games_listbox.insert(tk.END, game)
+        logger.debug(os.getenv("DEBUG_ALL_GAMES") + " - " + str(len(sorted_keys))) if os.getenv("DEBUG") == "true" else None
         list_window.destroy()
 
     list_window = tk.Toplevel(root)
@@ -601,6 +654,7 @@ def show_list():
     search_entry.bind("<KeyRelease>", filter_list)
 
     label_Text_Found_Games = os.getenv("FRAME_FOUND_GAMES")
+    logger.info(os.getenv("DEBUG_ALL_GAMES_MENU") + " - " + str(len(process_name_mapping))) if os.getenv("DEBUG") == "true" else None
     label_Text_Found_Games = label_Text_Found_Games.replace("#game_count", str(len(process_name_mapping)))
     label = tk.Label(list_frame, text=label_Text_Found_Games, font=(poppins_font, 12))
     label.grid(row=1, column=0, columnspan=2, pady=10)
@@ -638,9 +692,11 @@ def show_list():
                 return
 
             if selected_game in added_games:
+                logger.debug(os.getenv("DEBUG_ALREADY_ADDED") + " - " + selected_game) if os.getenv("DEBUG") == "true" else None
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
                 return
             else:
+                logger.info(os.getenv("DEBUG_GAME_ADDED") + " - " + selected_game) if os.getenv("DEBUG") == "true" else None
                 added_games.append(selected_game)
                 games_listbox.insert(tk.END, selected_game)
                 listbox.selection_clear(0, tk.END)  
@@ -669,10 +725,12 @@ def change_theme():
     if theme == 0:
         theme = 1
         sv_ttk.set_theme("light")
+        logger.debug(os.getenv("DEBUG_CHANGE_THEMA_LIGHT_MODE")) if os.getenv("DEBUG") == "true" else None
         show_toast(os.getenv("CHANGE_THEMA_LIGHT_MODE"))
     else:
         theme = 0
         sv_ttk.set_theme("dark")
+        logger.debug(os.getenv("DEBUG_CHANGE_THEMA_DARK_MODE")) if os.getenv("DEBUG") == "true" else None
         show_toast(os.getenv("CHANGE_THEMA_DARK_MODE"))
 
 def show_toast(message, duration=5000):
@@ -704,8 +762,10 @@ def show_toast(message, duration=5000):
 
         window.destroy()
 
-    toast.after(2000, start_fade, toast, duration - 4800)
-
+    try:
+        toast.after(2000, start_fade, toast, duration - 4800)
+    except:
+        pass
     
 
 """"
@@ -717,6 +777,10 @@ Args:
 Returns:
     dict: A dictionary containing the process name mapping.
 """
+
+if not is_supported_os():
+    logger.critical(os.getenv("UNSUPPORTED_OS"))
+    handle_exit(None, None)
 
 mapping_file_path = os.getenv("GAME_DATA_JSON")
 process_name_mapping = load_process_mapping(mapping_file_path)
@@ -816,7 +880,7 @@ Displays a warning message to the user if a newer version of the application is 
 
 The message includes the latest version number and the current version number, and is displayed using the Tkinter messagebox.showwarning() function.
 """
-if latest_version and local_version and str(latest_version) != str(local_version):
-    messagebox.showwarning(os.getenv("UPDATE_AVAILABLE"), os.getenv("UPDATE_AVAILABLE_MESSAGE").replace("#latest_version", latest_version).replace("#current_version", local_version))
+if latest_version["version"] != "" and local_version and str(latest_version["version"]) != str(local_version):
+    messagebox.showwarning(os.getenv("UPDATE_AVAILABLE"), os.getenv("UPDATE_AVAILABLE_MESSAGE").replace("#latest_version", latest_version["version"]).replace("#current_version", local_version).replace("#update_message", latest_version["message"]))
 
 root.mainloop()

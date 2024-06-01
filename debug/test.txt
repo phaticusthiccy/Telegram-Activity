@@ -1,0 +1,1 @@
+This folder contains of the logs of the running process.
