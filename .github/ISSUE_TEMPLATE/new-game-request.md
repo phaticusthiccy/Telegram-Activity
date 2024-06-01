@@ -1,7 +1,7 @@
 ---
 name: New Game Request
 about: New games that users want to add
-title: "[REQUEST]"
+title: "[REQUEST] New Game Request"
 labels: enhancement, game request
 assignees: phaticusthiccy
 
