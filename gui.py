@@ -85,20 +85,20 @@ def get_latest_version():
         response = requests.get("https://raw.githubusercontent.com/phaticusthiccy/Telegram-Activity/master/sample.env")
         response.raise_for_status()
         message_payload = {
-            version: "",
-            message: ""
+            "version": "",
+            "message": ""
         }
         for line in response.text.split("\n"):
             if line.startswith("VERSION="):
-                version = line.split("=")[1].strip('"')
+                message_payload["version"] = line.split("=")[1].strip('"')
             if line.startswith("UPDATE_MESSAGE="):
-                message = line.split("=")[1].strip('"')
+                message_payload["message"] = line.split("=")[1].strip('"')
         return message_payload
     except requests.exceptions.RequestException as e:
         logger.error(f"Error retrieving latest version: {e}")
     return {
-        version: "",
-        message: ""
+        "version": "",
+        "message": ""
     }
 
 async def print_me():
@@ -319,7 +319,7 @@ async def update_status(game_name, elapsed_time, games):
                 process_name2 = find_process_name(friendly_game_name2)
                 if any(key.lower() == process_name2.lower() for key in process_name_mapping):
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
-                    text_start += "`" + friendly_game_name2 + "`\n"
+                    text_start += "`" + friendly_game_name2.replace("`", "").replace("_", "").replace("*", "") + "`\n"
 
             if len(text_start) > 3800:
                 text_start = text_start[:3800] + "..."
@@ -342,7 +342,7 @@ async def update_status(game_name, elapsed_time, games):
                 process_name2 = find_process_name(friendly_game_name2)
                 if any(key.lower() == process_name2.lower() for key in process_name_mapping):
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
-                    text_start += "`" + friendly_game_name2 + "`\n"
+                    text_start += "`" + friendly_game_name2.replace("`", "").replace("_", "").replace("*", "") + "`\n"
 
             if len(text_start) > 3800:
                 text_start = text_start[:3800] + "..."
