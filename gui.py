@@ -1,32 +1,42 @@
 """
 Author: Phaticusthiccy
+
+This Python script is a graphical user interface (GUI) application built using the Tkinter library. The application allows users to monitor and display their activity status on the Telegram messaging platform based on the games they are currently playing.
+
+The main features of the application include:
+
+1. Adding and removing games to a list of monitored games.
+2. Displaying a list of available games to choose from.
+3. Setting a default biography message.
+4. Updating the user's Telegram status with the current game being played and the elapsed time.
+5. Displaying notifications and error messages.
+6. Changing the application theme between light and dark mode.
+
+The application uses the Telethon library to interact with the Telegram API and update the user's status. It also utilizes the psutil library to monitor running processes and detect the games being played.
+
+The application loads a mapping of game names to their corresponding process names from a JSON file. This mapping is used to identify the games being played based on the running processes.
+
+The main components of the GUI include:
+
+- A welcome label displaying the user's first name.
+- An entry field and button for adding games to the monitored list.
+- A listbox displaying the added games.
+- Buttons for removing games from the list, displaying a list of available games, and starting the monitoring process.
+- A text area for setting the default biography message.
+- A button for changing the application theme.
+
+The application also includes logging functionality to log debug messages, errors, and other information to the console and a log file.
+
+Usage:
+1. Enter your Telegram API credentials and other required configuration values in the `.env` file.
+2. Run the script to launch the GUI application.
+3. Add the games you want to monitor to the list.
+4. Set the default biography message.
+5. Click the "Start" button to begin monitoring and updating your Telegram status.
+
+Note: This application requires a Telegram account and API credentials to function correctly.
 """
 
-"""
-The code in gui.py is a Python script that creates a graphical user interface (GUI) application using the Tkinter library. The purpose of this application is to monitor running games on the user's computer and update their Telegram profile status accordingly.
-
-The application takes input from the user in the form of game names. The user can add games to a list by typing the game name in an entry field and clicking the "Add" button or pressing Enter. The user can also remove games from the list by selecting a game and clicking the "Remove" button or pressing the Delete key.
-
-The main output of the application is the user's Telegram profile status, which is updated to reflect the game they are currently playing and the elapsed time since they started playing it. If no game is being played, the profile status is set to a default biography entered by the user.
-
-To achieve its purpose, the code follows this logic:
-
-The user interface is created using Tkinter, with various widgets such as entry fields, listboxes, and buttons.
-The user adds game names to the list, which are stored in the added_games list.
-The code loads a mapping of game names to their corresponding process names from a JSON file (process_mapping.json).
-The application continuously checks if any of the games in the added_games list are running on the user's computer using the psutil library.
-If a game is running, the application calculates the elapsed time since the game started and updates the user's Telegram profile status using the Telethon library.
-If no game is running, the application sets the user's Telegram profile status to the default biography entered by the user.
-The application runs in an asynchronous event loop, updating the Telegram profile status every 60 seconds and periodically updating the GUI to keep it responsive.
-Important logic flows and data transformations:
-
-The find_process_name function is used to find the process name corresponding to a given game name by searching through the loaded process mapping.
-The get_process_name and get_friendly_name functions are used to convert between game names and their corresponding process names, using the loaded process mapping.
-The is_game_running function checks if a game with a given name is currently running on the user's computer by iterating over the running processes and comparing their names.
-The update_status function is an asynchronous function that updates the user's Telegram profile status based on the currently running game and the elapsed time.
-The main function is the core of the application, running in an asynchronous event loop and continuously checking for running games and updating the Telegram profile status accordingly.
-The code also includes helper functions for handling user input, displaying messages, and managing the GUI window.
-"""
 
 import asyncio
 import psutil
@@ -46,6 +56,13 @@ import requests
 import sv_ttk
 import logging
 
+"""
+Configures the logging system for the application.
+
+Adds a console handler and a file handler to the root logger, both set to log at the DEBUG level. The console handler and file handler use a common formatter that includes the timestamp, log level, and log message.
+
+The root logger is also set to log at the DEBUG level, ensuring that all log messages at or above the DEBUG level will be captured by the configured handlers.
+"""
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler('./debug/debug.log')
@@ -325,7 +342,7 @@ async def update_status(game_name, elapsed_time, games):
                 text_start = text_start[:3800] + "..."
             try:
                 await client.send_message("me", (os.getenv("START_MESSAGE").replace("#local_version", local_version)) + text_start, parse_mode="Markdown")
-                logger.info(os.getenv("DEBUG_START"))
+                logger.info(os.getenv("DEBUG_START")) if os.getenv("DEBUG") == "true" else None
             except Exception as e:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))

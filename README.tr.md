@@ -24,7 +24,6 @@ Projenin çalışması için aşağıdaki kütüphaneler gereklidir:
 - `tkinter`
 - `telethon`
 - `python-dotenv`
-- `pyinstaller`
 - `pillow`
 - `requests`
 - `sv_ttk`
@@ -101,6 +100,9 @@ Katkıda bulunmak istiyorsanız lütfen pull request gönderin veya konu açın.
 
 ## Lisans
 Bu proje [MIT Lisansı](LICENSE.tr.md) kapsamında lisanslanmıştır.
+
+## Hızlı Başlatma
+Projeyi çalıştırmak için her seferinde komut satırını açmanıza ve çok fazla kod girmenize gerek yok! [Buraya tıklayarak](https://github.com/phaticusthiccy/Telegram-Activity/wiki/Masa%C3%BCst%C3%BC-K%C4%B1sayolu-Nas%C4%B1l-Olu%C5%9Fturulur) masasütü kısayolunu oluşturmayı öğrenin!
 
 ## Sorun Giderme
 
