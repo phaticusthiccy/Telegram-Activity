@@ -9,6 +9,7 @@
 
 Telegram Game Status is a Python application that monitors the games you're playing on your computer and automatically updates your Telegram profile status accordingly. With this app, you can showcase your gaming activity to your Telegram contacts, letting them know which game you're currently playing and for how long you've been playing it.
 
+A total of 266 games are supported! Click [here](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) to see the games!
 
 ## Requirements
 
