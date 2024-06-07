@@ -8,9 +8,9 @@
 
 Telegram Oyun Durumu, bilgisayarınızda oynadığınız oyunları izleyen ve Telegram profil durumunuzu buna göre otomatik olarak güncelleyen bir Python uygulamasıdır. Bu uygulamayla oyun etkinliğinizi Telegram kişilerinize sergileyebilir, onlara şu anda hangi oyunu oynadığınızı ve ne kadar süredir oynadığınızı gösterebilirsiniz.
 
-Toplamda 266 oyun desteklenmektedir! Oyunları görmek için [buraya](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) tıklayın!
+Toplamda 358 oyun desteklenmektedir! Oyunları görmek için [buraya](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) tıklayın!
 
-## Gereksinimler
+## 1. Gereksinimler
 
 Önce projeyi kendi bilgisayarınıza klonlayın:
 ```bash
@@ -37,7 +37,7 @@ pip install -r requirements.txt
 ```
 
 
-## Ortam Değişkenleri
+## 2. Ortam Değişkenleri
 
 Projenin doğru şekilde çalıştığından emin olmak için belirli ortam değişkenlerini ayarlamanız gerekir. sample.env dosyasını .env'e kopyalayın ve gerekli değerleri girin:
 
@@ -61,7 +61,7 @@ Kopyaladıktan sonra düzenleme dosyasını şu komutla başlatın:
 nano .env
 ```
 
-## Kullanım
+## 3. Kullanım
 GUI uygulamasını çalıştırmak için gui.py dosyasını kullanın:
 
 > ```bash

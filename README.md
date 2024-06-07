@@ -9,9 +9,9 @@
 
 Telegram Game Status is a Python application that monitors the games you're playing on your computer and automatically updates your Telegram profile status accordingly. With this app, you can showcase your gaming activity to your Telegram contacts, letting them know which game you're currently playing and for how long you've been playing it.
 
-A total of 266 games are supported! Click [here](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) to see the games!
+A total of 358 games are supported! Click [here](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) to see the games!
 
-## Requirements
+## 1. Requirements
 
 Firstly, clone the poject to your computer:
 
@@ -38,7 +38,7 @@ You can install these dependencies using the `requirements.txt` file:
 pip install -r requirements.txt
 ```
 
-## Environment Variables
+## 2. Environment Variables
 To ensure the project runs correctly, you need to set certain environment variables. Copy the sample.env file to .env and fill in the required values:
 
 The following environment variables are required for the application to function correctly:
@@ -61,7 +61,7 @@ After copying it, start the edit file with this command:
 nano .env
 ```
 
-## Usage
+## 3. Usage
 To run the GUI application, use the gui.py file:
 
 > ```bash
