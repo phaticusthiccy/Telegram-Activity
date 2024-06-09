@@ -9,7 +9,7 @@
 
 Telegram Game Status is a Python application that monitors the games you're playing on your computer and automatically updates your Telegram profile status accordingly. With this app, you can showcase your gaming activity to your Telegram contacts, letting them know which game you're currently playing and for how long you've been playing it.
 
-A total of 358 games are supported! Click [here](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) to see the games!
+A total of 391 games are supported! Click [here (windows)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) or [here (linux)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games_linux.csv) to see the games!
 
 ## 1. Requirements
 
@@ -107,6 +107,9 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Quick Start (Windows Desktop Shortcut)
 You don't need to open the command line and enter a lot of code every time to run the project! Learn how to create a desktop shortcut [by clicking here](https://github.com/phaticusthiccy/Telegram-Activity/wiki/How-to-Create-Desktop-Shortcut)!
+
+## Quick Start (Linux Desktop Shortcut)
+You don't need to open the command line and enter a lot of code every time to run the project! Learn how to create a desktop shortcut [by clicking here](https://github.com/phaticusthiccy/Telegram-Activity/wiki/How-to-Create-Linux-Desktop-Shortcut)!
 
 ## Troubleshooting
 
