@@ -1,4 +1,5 @@
 Executable Names,Game Name,Keyword 1,Keyword 2,Keyword 3,Keyword 4
+60Seconds.x86_64,60 Seconds,-,-,-,-
 7DaysToDie.sh,7 Days to Die,7 days to die,-,-,-
 Borderlands2,Borderlands 2,-,-,-,-
 Civ5XP,Sid Meier's Civilization V,-,-,-,-
@@ -18,11 +19,22 @@ OxygenNotIncluded,Oxygen Not Included,-,-,-,-
 PlagueIncEvolved.x86_64,Plague Inc: Evolved,-,-,-,-
 PrisonArchitect,Prison Architect,-,-,-,-
 RiseOfTheTombRaider.sh,Rise of the Tomb Raider,-,-,-,-
+Robocraft.x86,Robocraft (x86),-,-,-,-
+Robocraft.x86_64,Robocraft,-,-,-,-
 RocketLeague,Rocket League,-,-,-,-
+Sakura Angels.sh,Sakura Angels,sakura angels,-,-,-
+Sakura Beach.sh,Sakura Beach,sakura beach,-,-,-
+Sakura Spirit.sh,Sakura Spirit,sakura spirit,-,-,-
+SakuraAlien.sh,Sakura Alien,sakura alien,-,-,-
+SakuraSuccubus5.sh,Sakura Succubus 5,sakura succubus 5,-,-,-
 Terraria,Terraria,-,-,-,-
+TheEscapists2.x86,The Escapists 2 (x86),-,-,-,-
+TheEscapists2.x86_64,The Escapists 2,-,-,-,-
 TombRaider.sh,Tomb Raider,-,-,-,-
 TotalWarhammer3.sh,Warhammer III,warhammer,-,-,-
+Tropico5,Tropico 5,-,-,-,-
 Unturned.x86_64,Unturned,-,-,-,-
+X-Plane-x86_64,X-Plane,-,-,-,-
 XCOM2.sh,XCOM 2,xcom2,-,-,-
 amtrucks,American Truck Simulator,ats,-,-,-
 cs2.sh,Counter-Strike 2,cs2,csgo,-,-
@@ -38,6 +50,7 @@ payday2_release,Payday 2,payday 2,-,-,-
 portal2.sh,Portal 2,portal 2,-,-,-
 postal2-bin,POSTAL 2,-,-,-,-
 projectzomboid.sh,Project Zomboid,project zomboid,-,-,-
+spacehaven,Space Haven,-,-,-,-
 start_RimWorld.sh,RimWorld,rimworld,-,-,-
 tf.sh,Team Fortress 2,tf2,tf,-,-
 underlords.sh,Dota Underlords,-,-,-,-
