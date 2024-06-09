@@ -41,5 +41,18 @@
     "TombRaider.sh": ["Tomb Raider", "TombRaider.sh"],
     "EscapeSimulator": ["Escape Simulator", "EscapeSimulator"],
     "postal2-bin": ["POSTAL 2", "postal2-bin"],
-    "paradiselost-bin": ["POSTAL 2: Paradise Lost", "paradiselost-bin"]
+    "paradiselost-bin": ["POSTAL 2: Paradise Lost", "paradiselost-bin"],
+    "spacehaven": ["Space Haven", "spacehaven"],
+    "X-Plane-x86_64": ["X-Plane", "X-Plane-x86_64"],
+    "TheEscapists2.x86": ["The Escapists 2 (x86)", "TheEscapists2.x86"],
+    "TheEscapists2.x86_64": ["The Escapists 2", "TheEscapists2.x86_64"],
+    "Tropico5": ["Tropico 5", "Tropico5"],
+    "Robocraft.x86": ["Robocraft (x86)", "Robocraft.x86"],
+    "Robocraft.x86_64": ["Robocraft", "Robocraft.x86_64"],
+    "60Seconds.x86_64": ["60 Seconds", "60Seconds.x86_64"],
+    "Sakura Beach.sh": ["Sakura Beach", "sakura beach", "Sakura Beach.sh"],
+    "SakuraAlien.sh": ["Sakura Alien", "sakura alien", "SakuraAlien.sh"],
+    "Sakura Spirit.sh": ["Sakura Spirit", "sakura spirit", "Sakura Spirit.sh"],
+    "Sakura Angels.sh": ["Sakura Angels", "sakura angels", "Sakura Angels.sh"],
+    "SakuraSuccubus5.sh": ["Sakura Succubus 5", "sakura succubus 5", "SakuraSuccubus5.sh"]
 }
