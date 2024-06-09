@@ -326,7 +326,7 @@ async def update_status(game_name, elapsed_time, games):
         try:
             await client(UpdateProfileRequest(about=default_bio))
         except Exception as e:
-            logger.warn(os.getenv("ERROR_UPDATE_DEFAULT_BIO"))
+            logger.warning(os.getenv("ERROR_UPDATE_DEFAULT_BIO"))
             logger.critical(e) if os.getenv("DEBUG") == "true" else None
 
         if not start:
@@ -348,7 +348,7 @@ async def update_status(game_name, elapsed_time, games):
             except Exception as e:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
-                logger.warn(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
+                logger.warning(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
                 logger.critical(e) if os.getenv("DEBUG") == "true" else None
                 return handle_exit(None, None)
     else:
@@ -371,7 +371,7 @@ async def update_status(game_name, elapsed_time, games):
             except Exception as e:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
-                logger.warn(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
+                logger.warning(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
                 logger.critical(e) if os.getenv("DEBUG") == "true" else None
                 return handle_exit(None, None)
 
@@ -394,7 +394,7 @@ async def update_status(game_name, elapsed_time, games):
             logger.info(os.getenv("DEBUG_PLAYING") + friendly_game_name + os.getenv("DEBUG_PLAYTIME") + str(elapsed_time + 1)) if os.getenv("DEBUG") == "true" else None
         except Exception as e:
             messagebox.showerror(os.getenv("ERROR"), os.getenv("TOO_LONG"))
-            logger.warn(os.getenv("TOO_LONG")) if os.getenv("DEBUG") == "true" else None
+            logger.warning(os.getenv("TOO_LONG")) if os.getenv("DEBUG") == "true" else None
             logger.critical(e) if os.getenv("DEBUG") == "true" else None
             root.quit()
             sys.exit()
@@ -537,7 +537,7 @@ def start_button_click():
         logger.info(os.getenv("CONSOLE_START_MESSAGE"))
         start_monitoring(games)
     else:
-        logger.warn(os.getenv("DEBUG_EMPTY_GAME_LIST")) if os.getenv("DEBUG") == "true" else None
+        logger.warning(os.getenv("DEBUG_EMPTY_GAME_LIST")) if os.getenv("DEBUG") == "true" else None
         messagebox.showwarning(os.getenv("WARNING"), os.getenv("ADD_AT_LEAST_ONE_GAME"))
 
 def add_game_to_list(process_name, list_window):
