@@ -4,11 +4,11 @@
 
 [<img src="https://images.emojiterra.com/openmoji/v15.0/512px/1f1f9-1f1f7.png" alt="Türkçe" width="30" height="30"> Türkçe](README.tr.md)
 
-## Açıklama
+## Açıklama (Windows be Linux Destekler)
 
 Telegram Oyun Durumu, bilgisayarınızda oynadığınız oyunları izleyen ve Telegram profil durumunuzu buna göre otomatik olarak güncelleyen bir Python uygulamasıdır. Bu uygulamayla oyun etkinliğinizi Telegram kişilerinize sergileyebilir, onlara şu anda hangi oyunu oynadığınızı ve ne kadar süredir oynadığınızı gösterebilirsiniz.
 
-Toplamda 358 oyun desteklenmektedir! Oyunları görmek için [buraya](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) tıklayın!
+Toplamda 410 oyun desteklenmektedir! Oyunları görmek için [buraya (windows)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) veya [buraya (linux)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games_linux.csv) tıklayın!
 
 ## 1. Gereksinimler
 
@@ -103,8 +103,11 @@ Katkıda bulunmak istiyorsanız lütfen pull request gönderin veya konu açın.
 ## Lisans
 Bu proje [MIT Lisansı](LICENSE.tr.md) kapsamında lisanslanmıştır.
 
-## Hızlı Başlatma
+## Hızlı Başlatma (Window Masaüstü Kısayolu)
 Projeyi çalıştırmak için her seferinde komut satırını açmanıza ve çok fazla kod girmenize gerek yok! [Buraya tıklayarak](https://github.com/phaticusthiccy/Telegram-Activity/wiki/Masa%C3%BCst%C3%BC-K%C4%B1sayolu-Nas%C4%B1l-Olu%C5%9Fturulur) masasütü kısayolunu oluşturmayı öğrenin!
+
+## Hızlı Başlatma (Linux Masaüstü Kısayolu)
+Projeyi çalıştırmak için her seferinde komut satırını açmanıza ve çok fazla kod girmenize gerek yok! [Buraya tıklayarak](https://github.com/phaticusthiccy/Telegram-Activity/wiki/Linux-Masa%C3%BCst%C3%BC-K%C4%B1sayolu-Nas%C4%B1l-Olu%C5%9Fturulur) masasütü kısayolunu oluşturmayı öğrenin!
 
 ## Sorun Giderme
 

@@ -157,14 +157,16 @@ logger.info(os.getenv("DEBUG_VERSION") + local_version) if os.getenv("DEBUG") ==
 
 def is_supported_os():
     """
-    Checks if the current operating system is Windows, Linux or macOS.
-
+    Returns the current system platform as a lowercase string.
+    
+    This function checks the current system platform and returns it as a lowercase string. If the DEBUG environment variable is set to "true", it will also log the system platform to the logger.
+    
     Returns:
-        bool: True if the operating system is Windows, Linux or macOS, False otherwise.
+        str: The current system platform as a lowercase string.
     """
     system = platform.system().lower()
     logger.info(os.getenv("DEBUG_SYSTEM") + system) if os.getenv("DEBUG") == "true" else None
-    return system == "windows" or system == "linux" or system == "darwin"
+    return system
 
 
 def load_process_mapping(file_path):
@@ -324,7 +326,7 @@ async def update_status(game_name, elapsed_time, games):
         try:
             await client(UpdateProfileRequest(about=default_bio))
         except Exception as e:
-            logger.warn(os.getenv("ERROR_UPDATE_DEFAULT_BIO"))
+            logger.warning(os.getenv("ERROR_UPDATE_DEFAULT_BIO"))
             logger.critical(e) if os.getenv("DEBUG") == "true" else None
 
         if not start:
@@ -336,7 +338,7 @@ async def update_status(game_name, elapsed_time, games):
                 process_name2 = find_process_name(friendly_game_name2)
                 if any(process_name2 is not False and key.lower() == process_name2.lower() for key in process_name_mapping):
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
-                    text_start += "`" + friendly_game_name2.replace("`", "").replace("_", "").replace("*", "") + "`\n"
+                    text_start += friendly_game_name2.replace("`", "").replace("_", "").replace("*", "") + "\n"
 
             if len(text_start) > 3800:
                 text_start = text_start[:3800] + "..."
@@ -346,7 +348,7 @@ async def update_status(game_name, elapsed_time, games):
             except Exception as e:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
-                logger.warn(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
+                logger.warning(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
                 logger.critical(e) if os.getenv("DEBUG") == "true" else None
                 return handle_exit(None, None)
     else:
@@ -359,7 +361,7 @@ async def update_status(game_name, elapsed_time, games):
                 process_name2 = find_process_name(friendly_game_name2)
                 if any(process_name2 is not False and key.lower() == process_name2.lower() for key in process_name_mapping):
                     friendly_game_name2 = capitalize_first_letters(process_name_mapping[process_name2][0])
-                    text_start += "`" + friendly_game_name2.replace("`", "").replace("_", "").replace("*", "") + "`\n"
+                    text_start += friendly_game_name2.replace("`", "").replace("_", "").replace("*", "") + "\n"
 
             if len(text_start) > 3800:
                 text_start = text_start[:3800] + "..."
@@ -369,7 +371,7 @@ async def update_status(game_name, elapsed_time, games):
             except Exception as e:
                 await client.log_out()
                 messagebox.showerror(os.getenv("ERROR"), os.getenv("CANT_CONNECT"))
-                logger.warn(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
+                logger.warning(os.getenv("ERROR_START_MESSAGE")) if os.getenv("DEBUG") == "true" else None
                 logger.critical(e) if os.getenv("DEBUG") == "true" else None
                 return handle_exit(None, None)
 
@@ -392,7 +394,7 @@ async def update_status(game_name, elapsed_time, games):
             logger.info(os.getenv("DEBUG_PLAYING") + friendly_game_name + os.getenv("DEBUG_PLAYTIME") + str(elapsed_time + 1)) if os.getenv("DEBUG") == "true" else None
         except Exception as e:
             messagebox.showerror(os.getenv("ERROR"), os.getenv("TOO_LONG"))
-            logger.warn(os.getenv("TOO_LONG")) if os.getenv("DEBUG") == "true" else None
+            logger.warning(os.getenv("TOO_LONG")) if os.getenv("DEBUG") == "true" else None
             logger.critical(e) if os.getenv("DEBUG") == "true" else None
             root.quit()
             sys.exit()
@@ -535,7 +537,7 @@ def start_button_click():
         logger.info(os.getenv("CONSOLE_START_MESSAGE"))
         start_monitoring(games)
     else:
-        logger.warn(os.getenv("DEBUG_EMPTY_GAME_LIST")) if os.getenv("DEBUG") == "true" else None
+        logger.warning(os.getenv("DEBUG_EMPTY_GAME_LIST")) if os.getenv("DEBUG") == "true" else None
         messagebox.showwarning(os.getenv("WARNING"), os.getenv("ADD_AT_LEAST_ONE_GAME"))
 
 def add_game_to_list(process_name, list_window):
@@ -802,11 +804,19 @@ Returns:
     dict: A dictionary containing the process name mapping.
 """
 
-if not is_supported_os():
+current_os = is_supported_os()
+"""
+Checks if the current operating system is not Windows or Linux, and if so, logs a critical message and exits the application.
+"""
+if current_os != 'windows' and current_os != 'linux':
     logger.critical(os.getenv("UNSUPPORTED_OS"))
     handle_exit(None, None)
 
-mapping_file_path = os.getenv("GAME_DATA_JSON")
+if current_os == "windows":
+    mapping_file_path = os.getenv("GAME_DATA_JSON_WINDOWS")
+elif current_os == "linux":
+    mapping_file_path = os.getenv("GAME_DATA_JSON_LINUX")
+
 process_name_mapping = load_process_mapping(mapping_file_path)
 
 """
