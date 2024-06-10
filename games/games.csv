@@ -8,6 +8,9 @@ ARKSurvivalEvolved.exe,ARK: Survival Evolved,ark,-,-,-
 AlienBreed-Impact.exe,Alien Breed,-,-,-,-
 AliensFireteamElite.exe,Aliens: Fireteam Elite,aliens fireteam elite,-,-,-
 AmongUs.exe,Among Us,among us,-,-,-
+AmongUsVR.exe,Among Us VR,-,-,-,-
+AnimeFeet.exe,Anime Feet,anime feet,-,-,-
+AnimeFeet2.exe,Anime Feet 2,anime feet 2,-,-,-
 Anno1800.exe,Anno 1800,anno 1800,-,-,-
 Anomaly 2.exe,Anomaly 2,-,-,-,-
 Anomaly Agent.exe,Anomaly Agent,-,-,-,-
@@ -25,9 +28,11 @@ Astro.exe,Astroneer,astro,-,-,-
 AtomicHeart-Win64-Test.exe,Atomic Heart (Steam),-,-,-,-
 AtomicHeart.exe,Atomic Heart (Non-Steam),-,-,-,-
 Avowed.exe,Avowed,avowed,-,-,-
+BB3.exe,Blood Bowl 3,-,-,-,-
 BFBC2Game.exe,Battlefield Bad Company 2,bf bad company,bf bad company 2,bf 2,-
 BOTW.exe,The Legend of Zelda: Breath of the Wild,zelda,-,-,-
 BabylonsFall.exe,Babylon's Fall,babylon's fall,-,-,-
+Back4Blood.exe,Back 4 Blood,-,-,-,-
 Backrooms.exe,Backrooms,-,-,-,-
 Banana.exe,Banana,-,-,-,-
 Bannerlord.Native.exe,Mount & Blade II: Bannerlord,bannerlord,-,-,-
@@ -39,6 +44,7 @@ Bioshock.exe,BioShock,bioshock,-,-,-
 BlackDesertOnline.exe,Black Desert Online,black desert,-,-,-
 BloodBowl2.exe,Blood Bowl 2,blood bowl,-,-,-
 BloodstainedRitualOfTheNight.exe,Bloodstained: Ritual of the Night,bloodstained,-,-,-
+BloodstainedRotN.exe,Bloodstained: Ritual of the Night,-,-,-,-
 BloonsTD6.exe,Bloons TD 6,bloons td 6,-,-,-
 Borderlands2.exe,Borderlands 2,borderlands2,borderlands 2,-,-
 Borderlands3.exe,Borderlands 3,borderlands3,borderlands 3,-,-
@@ -92,18 +98,22 @@ EldenRing.exe,Elden Ring,elden,elden ring,-,-
 EternalReturn.exe,Eternal Return,-,-,-,-
 EvilDeadTheGame.exe,Evil Dead: The Game,evil dead,-,-,-
 EvilGenius_profile_dx12.exe,Evil Genius,-,-,-,-
+F.E.A.R. 3.exe,F.E.A.R. 3,fear 3,-,-,-
 F12021.exe,F1 2021,f1,f1 2021,-,-
 F1_2015.exe,F1 2015,f1 2015,-,-,-
+FEAR2.exe,F.E.A.R. 2,fear 2,-,-,-
 FFXV.exe,Final Fantasy XV,final fantasy 15,-,-,-
 FIFA19.exe,FIFA 19,fifa19,fifa 19,FIFA 19,-
 FIST.exe,F.I.S.T.: Forged In Shadow Torch,fist,-,-,-
 FNAF.exe,Five Nights at Freddy's,fnaf,Five Nights at Freddy's,-,-
+FURRY SEX Cabaret.exe,FURRY SEX Cabaret,furry sex cabaret,-,-,-
 Fable.exe,Fable,fable,-,-,-
 Factorio.exe,Factorio,factorio,-,-,-
 FactoryGame.exe,Factory Game,-,-,-,-
 FactoryGameSteam.exe,Factory Game (Steam),-,-,-,-
 FallGuys_client.exe,Fall Guys,fall guys,-,-,-
 Fallout4.exe,Fallout 4,fallout,-,-,-
+Fallout4VR.exe,Fallout 4 VR,-,-,-,-
 Fallout76.exe,Fallout 76,fallout 76,-,-,-
 FalloutShelter.exe,Fallout Shelter,-,-,-,-
 FarCry5.exe,Far Cry 5,far cry,-,-,-
@@ -112,6 +122,7 @@ FarmingSimulator2022Game.exe,Farming Simulator 2022,farming simulator 2022,-,-,-
 Firestone.exe,Firestone,-,-,-,-
 FishingPlanet.exe,Fishing Planet,-,-,-,-
 FlightSimulator.exe,Microsoft Flight Simulator,Microsoft Flight Simulator,-,-,-
+FlipWitch.exe,Flip Witch,flip witch,-,-,-
 Forspoken.exe,Forspoken,forspoken,-,-,-
 FortniteClient-Win64-Shipping.exe,Fortnite,-,-,-,-
 ForzaHorizon4.exe,Forza Horizon 4,forza4,forza,-,-
@@ -210,6 +221,7 @@ OuterWorlds.exe,The Outer Worlds,outer worlds,-,-,-
 Outriders.exe,Outriders,outriders,-,-,-
 Overcooked2.exe,Overcooked 2,overcooked 2,-,-,-
 Overwatch.exe,Overwatch® 2,overwatch,-,-,-
+OyasumiVR.exe,OyasumiVR,-,-,-,-
 P5R.exe,Persona 5 Royal,p5r,-,-,-
 PAYDAY3.exe,PAYDAY 3,payday 3,-,-,-
 PUBG.exe,PUBG,playerunknown's battlegrounds,pubg,-,-
@@ -267,6 +279,9 @@ Scorn.exe,Scorn,scorn,-,-,-
 Scrivener.exe,Scrivener,-,-,-,-
 SeaOfThieves.exe,Sea of Thieves,sea of thieves,-,-,-
 Sekiro.exe,Sekiro: Shadows Die Twice,sekiro,-,-,-
+Sex Universe [18+].exe,Sex Universe,sex universe,-,-,-
+Sex of Thrones.exe,Sex of Thrones,sex of thrones,-,-,-
+SexyAirlines.exe,Sexy Airlines MAX,sexy airlines,-,-,-
 ShadowOfTheTombRaider.exe,Shadow of the Tomb Raider,tomb raider,shadow of the tomb raider,-,-
 ShipGraveyard2.exe,Ship Graveyard 2,-,-,-,-
 Shock2.exe,System Shock 2,shock 2,-,-,-
@@ -277,7 +292,9 @@ Silksong.exe,Hollow Knight: Silksong,silksong,-,-,-
 SimCity 4.exe,SimCity 4,-,-,-,-
 SkaterXL.exe,Skater XL,-,-,-,-
 Sky.exe,Sky: Children of the Light,-,-,-,-
+Skyhill.exe,SKYHILL,-,-,-,-
 SkyrimSE.exe,Skyrim Special Edition,skyrim,-,-,-
+SkyrimVR.exe,Skyrim VR,-,-,-,-
 SleepingDogs.exe,Sleeping Dogs,sleeping dogs,-,-,-
 SlimeRancher.exe,Slime Rancher,slime rancher,-,-,-
 SnowRunner.exe,SnowRunner,-,-,-,-
@@ -328,6 +345,7 @@ VALORANT-Win64-Shipping.exe,Valorant,valo,-,-,-
 VPet-Simulator.Windows.exe,VPet,-,-,-,-
 VPet-Simulator.Windows_x86.exe,VPet (x86),-,-,-,-
 VRising.exe,V Rising,-,-,-,-
+VTOLVR.exe,VTOL VR,-,-,-,-
 VolcanoPrincess.exe,Volcano Princess,-,-,-,-
 Warframe.exe,Warframe,warframe,-,-,-
 Warhammer2.exe,Warhammer II,warhammer 2,-,-,-
@@ -353,6 +371,7 @@ eurotrucks2.exe,Euro Truck Simulator 2,ets,ets2,euro truck,-
 ffxivboot.exe,FINAL FANTASY XIV,ffxiv,-,-,-
 forhonor.exe,For Honor,for honor,-,-,-
 forza_steamworks_release_final.exe,Forza Motorsport,-,-,-,-
+fpsVR.exe,fpsVR,-,-,-,-
 granblue_fantasy_relink.exe,Granblue Fantasy: Relink,granblue fantasy,-,-,-
 gta-sa.exe,Grand Theft Auto San Andreas,gta,-,-,-
 gta-vc.exe,Grand Theft Auto Vice City,gta vc,-,-,-

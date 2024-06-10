@@ -106,7 +106,7 @@ If you want to contribute, please send a pull request or open an issue. Any cont
 This project is licensed under the [MIT License](LICENSE).
 
 ## Quick Start (Windows Desktop Shortcut)
-You don't need to open the command line and enter a lot of code every time to run the project! Learn how to create a desktop shortcut [by clicking here](https://github.com/phaticusthiccy/Telegram-Activity/wiki/How-to-Create-Desktop-Shortcut)!
+You don't need to open the command line and enter a lot of code every time to run the project! Learn how to create a desktop shortcut [by clicking here](https://github.com/phaticusthiccy/Telegram-Activity/wiki/How-to-Create-Windows-Desktop-Shortcut)!
 
 ## Quick Start (Linux Desktop Shortcut)
 You don't need to open the command line and enter a lot of code every time to run the project! Learn how to create a desktop shortcut [by clicking here](https://github.com/phaticusthiccy/Telegram-Activity/wiki/How-to-Create-Linux-Desktop-Shortcut)!
