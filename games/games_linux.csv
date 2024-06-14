@@ -40,11 +40,14 @@ X-Plane-x86_64,X-Plane,-,-,-,-
 XCOM2.sh,XCOM 2,xcom2,-,-,-
 amtrucks,American Truck Simulator,ats,-,-,-
 cs2.sh,Counter-Strike 2,cs2,csgo,-,-
+darkmatter.sh,Dark Matter,dark matter,-,-,-
+domekeeper.x86_64,Dome Keeper,-,-,-,-
 dontstarve_steam,Don't Starve Together,dontstarve,-,-,-
 dontstarve_steam_x64,Don't Starve Together (x86),dontstarve,-,-,-
 dota.sh,Dota 2,dota,-,-,-
 eurotrucks2,Euro Truck Simulator 2,ets,ets2,euro truck,-
 factorio,Factorio,-,-,-,-
+limbo,Limbo,-,-,-,-
 mb_warband_linux,Mount & Blade: Warband,warband,-,-,-
 mow2.sh,Men of War II,-,-,-,-
 paradiselost-bin,POSTAL 2: Paradise Lost,-,-,-,-
@@ -52,6 +55,7 @@ payday2_release,Payday 2,payday 2,-,-,-
 portal2.sh,Portal 2,portal 2,-,-,-
 postal2-bin,POSTAL 2,-,-,-,-
 projectzomboid.sh,Project Zomboid,project zomboid,-,-,-
+retroarch.sh,RetroArch,retroarch,-,-,-
 spacehaven,Space Haven,-,-,-,-
 start_RimWorld.sh,RimWorld,rimworld,-,-,-
 tf.sh,Team Fortress 2,tf2,tf,-,-

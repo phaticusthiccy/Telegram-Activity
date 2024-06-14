@@ -2,6 +2,7 @@ Executable Names,Game Name,Keyword 1,Keyword 2,Keyword 3,Keyword 4
 12Minutes.exe,12 Minutes,12 minutes,-,-,-
 1v1_LOL.exe,1v1 LOL,-,-,-,-
 60SecondsReatomized.exe,60 Seconds,-,-,-,-
+ACOdyssey.exe,Assassin's Creed Odyssey,-,-,-,-
 ACOrigins.exe,Assassin's Creed Origins,assassins creed,assassins creed origins,-,-
 APlagueTaleRequiem.exe,A Plague Tale: Requiem,plague tale,-,-,-
 ARKSurvivalEvolved.exe,ARK: Survival Evolved,ark,-,-,-
@@ -34,8 +35,10 @@ BOTW.exe,The Legend of Zelda: Breath of the Wild,zelda,-,-,-
 BabylonsFall.exe,Babylon's Fall,babylon's fall,-,-,-
 Back4Blood.exe,Back 4 Blood,-,-,-,-
 Backrooms.exe,Backrooms,-,-,-,-
+Banana and Cucumber.exe,Cucumber,banana and cucumber,-,-,-
 Banana.exe,Banana,-,-,-,-
 Bannerlord.Native.exe,Mount & Blade II: Bannerlord,bannerlord,-,-,-
+BatmanAK.exe,Batman: Arkham Knight,batman arkham,-,-,-
 BattlefrontII.exe,Star Wars Battlefront II,battlefront,-,-,-
 BeamNG.drive.exe,BeamNG Drive,-,-,-,-
 BeyondGoodAndEvil2.exe,Beyond Good and Evil 2,beyond good and evil,-,-,-
@@ -69,11 +72,14 @@ Cuphead.exe,Cuphead,cuphead,-,-,-
 CyberConnect2.exe,Naruto Shippuden: Ultimate Ninja Storm 4,naruto,naruto storm 4,-,-
 Cyberpunk2077.exe,Cyberpunk 2077,cyberpunk,cyberpunk 2077,-,-
 DDNet.exe,DDNet,-,-,-,-
+DEVOUR.exe,DEVOUR,devour,-,-,-
 DOOMx64.exe,DOOM,-,-,-,-
 DarkPicturesAnthologyHouseOfAshes.exe,The Dark Pictures Anthology: House of Ashes,house of ashes,-,-,-
 DarkSouls3.exe,Dark Souls III,dark souls 3,-,-,-
 DarkSoulsRemastered.exe,Dark Souls Remastered,dark souls,-,-,-
 DarkestDungeon.exe,Darkest Dungeon,darkest dungeon,-,-,-
+DaysGone.exe,Days Gone,days gone,-,-,-
+Dead Space.exe,Dead Space,dead space,-,-,-
 DeadByDaylight.exe,Dead by Daylight,dead by daylight,-,-,-
 DeadCells.exe,Dead Cells,dead cells,dead,-,-
 DeathStranding.exe,Death Stranding,death stranding,-,-,-
@@ -89,6 +95,7 @@ DiscoElysium.exe,Disco Elysium,disco elysium,-,-,-
 Discovery.exe,The FINALS,-,-,-,-
 Dishonored.exe,Dishonored,dishonored,-,-,-
 Dishonored2.exe,Dishonored 2,dishonored,dishonored 2,-,-
+Distant_Space.exe,Distant Space,distant space,-,-,-
 DivinityOriginalSin2.exe,Divinity: Original Sin 2,divinity 2,-,-,-
 DoomEternal.exe,Doom Eternal,doom,-,-,-
 Dota2.exe,Dota 2,dota,dota 2,-,-
@@ -117,6 +124,8 @@ Fallout4VR.exe,Fallout 4 VR,-,-,-,-
 Fallout76.exe,Fallout 76,fallout 76,-,-,-
 FalloutShelter.exe,Fallout Shelter,-,-,-,-
 FarCry5.exe,Far Cry 5,far cry,-,-,-
+FarCry6.exe,Far Cry 6,far cry 6,-,-,-
+FarmTogether2.exe,Farm Together 2,farm together 2,-,-,-
 FarmingSimulator2019Game.exe,Farming Simulator 2019,farming simulator 2019,-,-,-
 FarmingSimulator2022Game.exe,Farming Simulator 2022,farming simulator 2022,-,-,-
 Firestone.exe,Firestone,-,-,-,-
@@ -131,6 +140,7 @@ Frostpunk.exe,Frostpunk,frostpunk,-,-,-
 GGST.exe,GUILTY GEAR -STRIVE-,ggst,-,-,-
 GH.exe,Green Hell,-,-,-,-
 GTA5.exe,GTA 5,gta5,gta 5,-,-
+Galaxy Life.exe,Galaxy Life,galaxy life,-,-,-
 GenshinImpact.exe,Genshin Impact,genshin,genshin impact,-,-
 GeometryDash.exe,Geometry Dash,geometry dash,-,-,-
 GhostOfTsushima.exe,Ghost of Tsushima,ghost of tsushima,-,-,-
@@ -150,6 +160,7 @@ HaloInfinite.exe,Halo Infinite,halo,halo infinite,-,-
 HaloMCC.exe,Halo: The Master Chief Collection,halo,mcc,-,-
 Hammerwatch.exe,Hammerwatch,hammer,-,-,-
 HerosLand.exe,Hero's Land,heros land,-,-,-
+Hi-Fi-RUSH.exe,Hi-Fi RUSH,hi-fi rush,-,-,-
 Hitman3.exe,Hitman 3,hitman,-,-,-
 HogwartsLegacy.exe,Hogwarts Legacy (Non-Steam),hogwarts legacy,-,-,-
 HollowKnight.exe,Hollow Knight,hollow knight,-,-,-
@@ -158,6 +169,8 @@ HorizonZeroDawn.exe,Horizon Zero Dawn,horizon,horizon zero dawn,-,-
 Human.exe,Human Fall Flat,-,-,-,-
 Humankind.exe,Humankind,humankind,-,-,-
 Icarus.exe,Icarus,icarus,-,-,-
+Idle Fishing.exe,Idle Fishing,idle fishing,-,-,-
+Idle Slayer.exe,Idle Slayer,idle slayer,-,-,-
 Impact Point.exe,Impact Point,-,-,-,-
 Impaler.exe,Impaler,-,-,-,-
 Inside.exe,Inside,inside,-,-,-
@@ -172,7 +185,9 @@ KSP_x64.exe,Kerbal Space Program,KSP,-,-,-
 KenFolletPillarsOfEarth.exe,Ken Follett's The Pillars of the Earth,pillars of the earth,-,-,-
 KenaBridgeOfSpirits.exe,Kena: Bridge of Spirits,kena,-,-,-
 Kholat.exe,KHOLAT,-,-,-,-
+KillingFloor.exe,Killing Floor,killing floor,-,-,-
 LIS2-Win64-Shipping.exe,Life is Strange 2,lis2,lis 2,-,-
+Layers Of Fear.exe,Layers of Fear,layers of fear,-,-,-
 LeagueClient.exe,League of Legends,lol,league,-,-
 Lethal Company.exe,Lethal Company,lethal company,-,-,-
 LiS.exe,Life is Strange Remastered,lisr,-,-,-
@@ -182,6 +197,7 @@ LifeIsStrange3.exe,Life is Strange 3,lis3,lis 3,-,-
 Limbo.exe,Limbo,limbo,-,-,-
 LittleNightmares2.exe,Little Nightmares II,little nightmares 2,-,-,-
 LoopHero.exe,Loop Hero,loop hero,-,-,-
+Lords Mobile.exe,Lords Mobile,lords mobile,-,-,-
 MHWorld.exe,Monster Hunter: World,monster hunter,monster hunter world,-,-
 MK10.exe,Mortal Kombat X,mk10,-,-,-
 MK11.exe,Mortal Kombat 11,mk11,-,-,-
@@ -228,6 +244,7 @@ PUBG.exe,PUBG,playerunknown's battlegrounds,pubg,-,-
 PaladinsBootstrapper.exe,Paladins (x86),-,-,-,-
 PaladinsEAC.exe,Paladins,-,-,-,-
 Palworld.exe,Palworld,-,-,-,-
+Panicore.exe,Panicore,-,-,-,-
 PartyAnimals.exe,Party Animals,-,-,-,-
 PathOfExile.exe,Path of Exile (Non-Steam),poe,path of exile,-,-
 PathOfExileSteam.exe,Path of Exile (Steam),path of exile,-,-,-
@@ -242,6 +259,7 @@ PlanetZoo.release.exe,Planet Zoo (Release),-,-,-,-
 Portal2.exe,Portal 2,portal 2,-,-,-
 Postal Plus.exe,POSTAL,-,-,-,-
 Prey.exe,Prey,prey,-,-,-
+ProjectCoral.exe,Coral Island,-,-,-,-
 Psychonauts2.exe,Psychonauts 2,psychonauts 2,-,-,-
 Raft.exe,Raft,-,-,-,-
 RailwayEmpire2.exe,Railway Empire 2,-,-,-,-
@@ -252,6 +270,7 @@ RedDeadRedemption2.exe,Red Dead Redemption 2,red dead redemption,red dead redemp
 Redfall.exe,Redfall,redfall,-,-,-
 RelicCoH2.exe,Company of Heroes 2,coh2,-,-,-
 RelicCoH3.exe,Company of Heroes 3,coh3,-,-,-
+Remnant2.exe,Remnant II,remnant 2,-,-,-
 RemnantFromTheAshes.exe,Remnant: From the Ashes,remnant,remnant from the ashes,-,-
 ResidentEvilVillage.exe,Resident Evil Village,resident evil,-,-,-
 Returnal.exe,Returnal,returnal,-,-,-
@@ -262,6 +281,7 @@ RobloxStudioBeta.exe,ROBLOX Studio,-,-,-,-
 RocketLeague.exe,Rocket League,rocket league,-,-,-
 Romance Club.exe,Romance Club,-,-,-,-
 RustClient.exe,Rust (Non-Steam),rust,-,-,-
+SCPSL.exe,SCP: Secret Laboratory,scp,-,-,-
 SFTK.exe,Street Fighter X Tekken,sftk,-,-,-
 SNAP.exe,MARVEL SNAP,snap,-,-,-
 Sable.exe,Sable,sable,-,-,-
@@ -304,6 +324,7 @@ SonsOfTheForest.exe,Sons of the Forest,sons of the forest,-,-,-
 SpaceEngineers.exe,Space Engineers,-,-,-,-
 SpinTires.exe,Spin Tires,spin tires,-,-,-
 Spiritfarer.exe,Spiritfarer,spiritfarer,-,-,-
+SporeApp.exe,Spore,spore,-,-,-
 Stalker2.exe,S.T.A.L.K.E.R. 2: Heart of Chernobyl,stalker 2,-,-,-
 StarCitizen.exe,Star Citizen,star citizen,-,-,-
 StarWarsBattlefrontII.exe,Star Wars Battlefront II,star wars,battlefront ii,-,-
@@ -339,6 +360,9 @@ TmUnitedForever.exe,Trackmania United Forever,tmu,-,-,-
 Tropico5Steam.exe,Tropico 5 (Steam),-,-,-,-
 Tunic.exe,Tunic,tunic,-,-,-
 UE4-Win64-Test.exe,Unreal Tournament 4,ut4,-,-,-
+ULTRAKILL.exe,ULTRAKILL,ultra kill,-,-,-
+UNDERTALE.exe,UNDERTALE,undertale,-,-,-
+Uncanny.exe,Uncanny,-,-,-,-
 Undying.exe,Clive Barker’s Undying,undying,-,-,-
 Unturned.exe,Unturned,-,-,-,-
 VALORANT-Win64-Shipping.exe,Valorant,valo,-,-,-
@@ -346,6 +370,7 @@ VPet-Simulator.Windows.exe,VPet,-,-,-,-
 VPet-Simulator.Windows_x86.exe,VPet (x86),-,-,-,-
 VRising.exe,V Rising,-,-,-,-
 VTOLVR.exe,VTOL VR,-,-,-,-
+VampireSurvivors.exe,Vampire Survivors,vampire survivors,-,-,-
 VolcanoPrincess.exe,Volcano Princess,-,-,-,-
 Warframe.exe,Warframe,warframe,-,-,-
 Warhammer2.exe,Warhammer II,warhammer 2,-,-,-
@@ -364,7 +389,9 @@ arma2.exe,ArmA 2,arma2,arma 2,-,-
 arma3.exe,ArmA 3,arma3,arma,arma 2,-
 broforce_beta.exe,Broforce,-,-,-,-
 cs2.exe,Counter-Strike 2,cs2,csgo,-,-
+darkmatter.exe,Dark Matter,dark matter,-,-,-
 dirt3_game.exe,DiRT 3,dirt 3,-,-,-
+domekeeper.exe,Dome Keeper,domekeeper,-,-,-
 dontstarve_steam_x64.exe,Don't Starve Together,dontstarve,-,-,-
 downwell.exe,Downwell,-,-,-,-
 eurotrucks2.exe,Euro Truck Simulator 2,ets,ets2,euro truck,-
@@ -393,7 +420,10 @@ nba2k22.exe,NBA 2K22,nba 2k22,-,-,-
 pCARS64.exe,Project Cars,-,-,-,-
 payday2_win32_release.exe,PAYDAY 2,payday 2,payday2,payday,-
 payday_win32_release.exe,PAYDAY: The Heist,payday,-,-,-
+pico_park.exe,Pico Park,pico park,-,-,-
+re2.exe,Resident Evil 2,re2,-,-,-
 re3.exe,Resident Evil 3,re3,re,-,-
+retroarch.exe,RetroArch,retroarch,-,-,-
 rf4_x64.exe,Russian Fishing 4,rf4,-,-,-
 robocraft.exe,RoboCraft,robocraft,-,-,-
 rust.exe,Rust (Steam),-,-,-,-

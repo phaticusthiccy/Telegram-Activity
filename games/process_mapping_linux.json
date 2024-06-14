@@ -56,5 +56,9 @@
     "Sakura Angels.sh": ["Sakura Angels", "sakura angels", "Sakura Angels.sh"],
     "SakuraSuccubus5.sh": ["Sakura Succubus 5", "sakura succubus 5", "SakuraSuccubus5.sh"],
     "Skyhill.x86": ["Skyhill (X86)", "Skyhill.x86"],
-    "Skyhill.x86_64": ["Skyhill", "Skyhill.x86_64"]
+    "Skyhill.x86_64": ["Skyhill", "Skyhill.x86_64"],
+    "retroarch.sh": ["RetroArch", "retroarch", "retroarch.sh"],
+    "domekeeper.x86_64": ["Dome Keeper", "domekeeper.x86_64"],
+    "limbo": ["Limbo", "limbo"],
+    "darkmatter.sh": ["Dark Matter", "dark matter", "darkmatter.sh"]
 }
