@@ -60,5 +60,8 @@
     "retroarch.sh": ["RetroArch", "retroarch", "retroarch.sh"],
     "domekeeper.x86_64": ["Dome Keeper", "domekeeper.x86_64"],
     "limbo": ["Limbo", "limbo"],
-    "darkmatter.sh": ["Dark Matter", "dark matter", "darkmatter.sh"]
+    "darkmatter.sh": ["Dark Matter", "dark matter", "darkmatter.sh"],
+    "IN HEAT.x86_64": ["IN HEAT", "IN HEAT.x86_64"],
+    "Spiritfarer.x86_64": ["Spiritfarer", "Spiritfarer.x86_64"],
+    "Tabletop Simulator.x86_64": ["Tabletop Simulator", "Tabletop Simulator.x86_64"]
 }
