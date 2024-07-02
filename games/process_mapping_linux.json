@@ -63,5 +63,6 @@
     "darkmatter.sh": ["Dark Matter", "dark matter", "darkmatter.sh"],
     "IN HEAT.x86_64": ["IN HEAT", "IN HEAT.x86_64"],
     "Spiritfarer.x86_64": ["Spiritfarer", "Spiritfarer.x86_64"],
-    "Tabletop Simulator.x86_64": ["Tabletop Simulator", "Tabletop Simulator.x86_64"]
+    "Tabletop Simulator.x86_64": ["Tabletop Simulator", "Tabletop Simulator.x86_64"],
+    "worldbox": ["WorldBox", "worldbox"]
 }

@@ -8,7 +8,7 @@
 
 Telegram Oyun Durumu, bilgisayarınızda oynadığınız oyunları izleyen ve Telegram profil durumunuzu buna göre otomatik olarak güncelleyen bir Python uygulamasıdır. Bu uygulamayla oyun etkinliğinizi Telegram kişilerinize sergileyebilir, onlara şu anda hangi oyunu oynadığınızı ve ne kadar süredir oynadığınızı gösterebilirsiniz.
 
-Toplamda 462 oyun desteklenmektedir! Oyunları görmek için [buraya (windows)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) veya [buraya (linux)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games_linux.csv) tıklayın!
+Toplamda 524 oyun desteklenmektedir! Oyunları görmek için [buraya (windows)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) veya [buraya (linux)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games_linux.csv) tıklayın!
 
 ## 1. Gereksinimler
 
@@ -30,7 +30,7 @@ Projenin çalışması için aşağıdaki kütüphaneler gereklidir:
 - `requests`
 - `sv_ttk`
 
-Bu bağımlılıkları `requirements.txt` dosyasını kullanarak yükleyebilirsiniz:
+Bu bağımlılıkları [`requirements.txt`](./requirements.txt) dosyasını kullanarak yükleyebilirsiniz:
 
 ```bash
 pip install -r requirements.txt
@@ -120,7 +120,7 @@ Gerekli ortam değişkenlerinin (`API_ID`, `API_HASH` ve `DEFAULT_BIO`) doğru �
 Aktif bir internet bağlantınız olduğundan ve Telegram sunucularına erişilebildiğinden emin olun. Bağlantınızı doğrulamak için başka bir Telegram kullanıcısına veya grubuna mesaj göndermeyi deneyebilirsiniz.
 
 ### 3. Oyun Listesini Kontrol Edin
-Uygulamanın oynadığınız bir oyunu algılayamadığı durumlarda, oyunun `process_mapping.json` dosyasında bulunduğundan emin olun. Yoksa, "Katkıda Bulunma" bölümündeki talimatları izleyerek ekleyebilirsiniz.
+Uygulamanın oynadığınız bir oyunu algılayamadığı durumlarda, oyunun [`process_mapping.json`](./games/process_mapping.json) dosyasında bulunduğundan emin olun. Yoksa, "Katkıda Bulunma" bölümündeki talimatları izleyerek ekleyebilirsiniz.
 
 ### 4. İzinleri Kontrol Edin
 Bazı sistemlerde, uygulamanın çalışan işlemleri izlemek için ek izinlere ihtiyacı olabilir. Uygulamayı yönetici ayrıcalıklarıyla çalıştırmayı deneyin.

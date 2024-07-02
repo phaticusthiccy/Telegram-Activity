@@ -9,7 +9,7 @@
 
 Telegram Game Status is a Python application that monitors the games you're playing on your computer and automatically updates your Telegram profile status accordingly. With this app, you can showcase your gaming activity to your Telegram contacts, letting them know which game you're currently playing and for how long you've been playing it.
 
-A total of 462 games are supported! Click [here (windows)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) or [here (linux)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games_linux.csv) to see the games!
+A total of 524 games are supported! Click [here (windows)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) or [here (linux)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games_linux.csv) to see the games!
 
 ## 1. Requirements
 
@@ -32,7 +32,7 @@ The following libraries are required for the project to run:
 - `requests`
 - `sv_ttk`
 
-You can install these dependencies using the `requirements.txt` file:
+You can install these dependencies using the [`requirements.txt`](./requirements.txt) file:
 
 ```bash
 pip install -r requirements.txt
@@ -122,7 +122,7 @@ Ensure that you have correctly set the required environment variables (`API_ID`,
 Make sure you have an active internet connection and that the Telegram servers are accessible. You can try sending a message to another Telegram user or group to verify your connection.
 
 ### 3. Check Game List
-If the application is not detecting a game you're playing, ensure that the game is included in the `process_mapping.json` file. If not, you can add it by following the instructions in the "Contributing" section.
+If the application is not detecting a game you're playing, ensure that the game is included in the [`process_mapping.json`](./games/process_mapping.json) file. If not, you can add it by following the instructions in the "Contributing" section.
 
 ### 4. Check Permissions
 On some systems, the application may require additional permissions to monitor running processes. Try running the application with administrative privileges.
