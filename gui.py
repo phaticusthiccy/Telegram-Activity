@@ -154,6 +154,45 @@ logger.info(os.getenv("DEBUG_ON")) if os.getenv("DEBUG") == "true" else None
 local_version = os.getenv("VERSION")
 logger.info(os.getenv("DEBUG_VERSION") + local_version) if os.getenv("DEBUG") == "true" else None
 
+def toggle_debug_mode(fromTheme):
+    """
+    Toggles the debug mode for the application.
+    
+    Args:
+        fromTheme (bool): Indicates whether the toggle was triggered from a theme change.
+    
+    Returns:
+        None
+    """
+    if not fromTheme:
+        if debug_mode_var.get():
+            os.environ["DEBUG"] = "true"
+            logger.info(os.getenv("DEBUG_MODE_ON"))
+        else:
+            os.environ["DEBUG"] = "false"
+            logger.info(os.getenv("DEBUG_MODE_OFF"))
+
+    if theme == 0:
+        debug_mode_button.configure(selectcolor="black")
+        hint_mode_button.configure(selectcolor="black")
+    else:
+        debug_mode_button.configure(selectcolor="white")
+        hint_mode_button.configure(selectcolor="white")
+    return
+
+def toggle_hint_mode(fromTheme):
+    if not fromTheme:
+        if hint_mode_var.get():
+            os.environ["HINTS"] = "true"
+            logger.info(os.getenv("HINTS_ON"))
+        else:
+            os.environ["HINTS"] = "false"
+            logger.info(os.getenv("HINTS_OFF"))
+
+    if theme == 0:
+        return hint_mode_button.configure(selectcolor="black")
+    else:
+        return hint_mode_button.configure(selectcolor="white")
 
 def is_supported_os():
     """
@@ -167,7 +206,6 @@ def is_supported_os():
     system = platform.system().lower()
     logger.info(os.getenv("DEBUG_SYSTEM") + system) if os.getenv("DEBUG") == "true" else None
     return system
-
 
 def load_process_mapping(file_path):
     """
@@ -241,40 +279,6 @@ def get_process_name(friendly_name):
 
 def get_friendly_name(process_name):
     """
-    Returns the friendly name for the given process name. If no friendly name is
-    defined, the original process name is returned.
-    """
-    return friendly_name_mapping.get(process_name, process_name)
-
-def is_game_running(game_name):
-    """
-    Checks if a game with the given name is currently running on the system.
-    
-    Args:
-        game_name (list[str]): A list of game names to check for.
-    
-    Returns:
-        bool: True if a game with the given name is running, False otherwise.
-    """
-    for process in psutil.process_iter(['pid', 'name']):
-        if any(name.lower() == process.info['name'].lower() for name in game_name):
-            return True
-    return False
-
-def get_process_name(friendly_name):
-    """
-    Returns the process name for the given friendly name. If no mapping is found, the original friendly name is returned.
-    
-    Args:
-        friendly_name (str): The friendly name to look up.
-    
-    Returns:
-        str: The process name for the given friendly name, or the original friendly name if no mapping is found.
-    """
-    return friendly_name_mapping.get(friendly_name, friendly_name)
-
-def get_friendly_name(process_name):
-    """
     Returns a friendly name for the given process name. If no friendly name mapping is
     available, the original process name is returned.
     
@@ -286,21 +290,6 @@ def get_friendly_name(process_name):
         if no friendly name mapping is available.
     """
     return friendly_name_mapping.get(process_name, process_name)
-
-def is_game_running(game_name):
-    """
-    Checks if a game with the given name is currently running on the system.
-    
-    Args:
-        game_name (Union[str, List[str]]): The name or list of names of the game to check for.
-    
-    Returns:
-        bool: True if the game is running, False otherwise.
-    """
-    for process in psutil.process_iter(['pid', 'name']):
-        if any(name.lower() == process.info['name'].lower() for name in game_name):
-            return True
-    return False
 
 def is_any_game_running(game_names):
     """
@@ -388,7 +377,7 @@ async def update_status(game_name, elapsed_time, games):
         else:
             action_emoji = ACTION_EMOJI_MORE_120_MIN
         
-        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "")
+        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "").replace(" (x64)", "")
         try:
             await client(UpdateProfileRequest(about=new_status))
             logger.info(os.getenv("DEBUG_PLAYING") + friendly_game_name + os.getenv("DEBUG_PLAYTIME") + str(elapsed_time + 1)) if os.getenv("DEBUG") == "true" else None
@@ -430,7 +419,7 @@ async def main(games):
 
     start_time = None
     current_game = None
-    check_interval = 60
+    check_interval = int(os.getenv("INTERVAL_TIME"))
     while True:
         try:
             await client.connect()
@@ -441,7 +430,7 @@ async def main(games):
             if current_game != game_name:
                 current_game = game_name
                 start_time = time.time()
-            elapsed_time = int((time.time() - start_time) / 60)
+            elapsed_time = int((time.time() - start_time) / check_interval)
             await update_status(current_game, elapsed_time, games)
         else:
             await update_status(False, False, games)
@@ -483,11 +472,11 @@ def add_game(event=None):
             messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
             logger.debug(os.getenv("ALREADY_ADDED") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
             return
-        added_games.append(process_names)
         findgame = find_process_name(process_names)
         if findgame == False:
             logger.debug(os.getenv("NOT_IN_DATABASE") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
             return messagebox.showwarning(os.getenv("WARNING"), os.getenv("NOT_IN_DATABASE"))
+        added_games.append(process_names)
         games_listbox.insert(tk.END, process_names)
         game_entry.delete(0, tk.END)
         logger.info(os.getenv("DEBUG_GAME_ADDED") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
@@ -573,7 +562,7 @@ def add_placeholder(entry, placeholder):
         placeholder (str): The placeholder text to display.
     """
     entry.insert(0, placeholder)
-    entry.config(fg='grey', cursor="hand2")
+    entry.config(fg='grey', cursor="xterm")
     global theme
     def on_focus_in(event):
         if entry.get() == placeholder:
@@ -594,10 +583,16 @@ def add_placeholder(entry, placeholder):
 def remove_all_games():
     """
     Removes all games from the games_listbox and the added_games list.
+    If there are no games in the list, it shows a toast message.
     """
-    games_listbox.delete(0, tk.END)
-    added_games.clear()
-    logger.info(os.getenv("DEBUG_ALL_GAMES_REMOVED")) if os.getenv("DEBUG") == "true" else None
+    if not games_listbox.size():
+        show_toast(os.getenv("NO_GAMES_TO_REMOVE"))
+        logger.debug(os.getenv("DEBUG_NO_GAMES_TO_REMOVE")) if os.getenv("DEBUG") == "true" else None
+    else:
+        games_listbox.delete(0, tk.END)
+        added_games.clear()
+        show_toast(os.getenv("DEBUG_ALL_GAMES_REMOVED"))
+        logger.info(os.getenv("DEBUG_ALL_GAMES_REMOVED")) if os.getenv("DEBUG") == "true" else None
 
 def show_list():
     """
@@ -730,13 +725,13 @@ def show_list():
 
     listbox.bind("<Return>", add_to_list)
     listbox.bind("<Double-1>", add_on_double_click)
-    add_button = tk.Button(list_frame, text=os.getenv("ADD"), command=add_to_list)
+    add_button = tk.Button(list_frame, text=os.getenv("ADD"), command=add_to_list, cursor="hand2")
     add_button.grid(row=3, column=0, padx=10, pady=10)
 
-    add_all_button = tk.Button(list_frame, text=os.getenv("ADD_ALL"), command=add_all_games, font=(poppins_font, 12))
+    add_all_button = tk.Button(list_frame, text=os.getenv("ADD_ALL"), command=add_all_games, font=(poppins_font, 12), cursor="hand2")
     add_all_button.grid(row=3, column=2, padx=10, pady=10)
 
-    close_button = tk.Button(list_frame, text=os.getenv("CLOSE"), command=list_window.destroy)
+    close_button = tk.Button(list_frame, text=os.getenv("CLOSE"), command=list_window.destroy, cursor="hand2")
     close_button.grid(row=3, column=1, padx=10, pady=10)
 
     list_window.resizable(False, False)
@@ -750,16 +745,27 @@ def change_theme():
     global theme
     if theme == 0:
         theme = 1
+        remove_button.configure(fg="maroon")
+        remove_all_button.configure(fg="violet red")
+        start_button.configure(fg="SteelBlue1")
         sv_ttk.set_theme("light")
         logger.debug(os.getenv("DEBUG_CHANGE_THEMA_LIGHT_MODE")) if os.getenv("DEBUG") == "true" else None
         show_toast(os.getenv("CHANGE_THEMA_LIGHT_MODE"))
     else:
         theme = 0
+        remove_button.configure(fg="hot pink")
+        remove_all_button.configure(fg="red")
+        start_button.configure(fg="DeepSkyBlue2")
         sv_ttk.set_theme("dark")
         logger.debug(os.getenv("DEBUG_CHANGE_THEMA_DARK_MODE")) if os.getenv("DEBUG") == "true" else None
         show_toast(os.getenv("CHANGE_THEMA_DARK_MODE"))
 
-def show_toast(message, duration=5000):
+    toggle_debug_mode(True)
+    toggle_hint_mode(True)
+
+toast_window = None
+
+def show_toast(message, duration=5000, after=2000):
     """
     Displays a toast notification on the screen for a specified duration.
     
@@ -767,42 +773,39 @@ def show_toast(message, duration=5000):
         message (str): The message to display in the toast notification.
         duration (int, optional): The duration of the toast notification in milliseconds. Defaults to 5000 (5 seconds).
     """
-    toast = tk.Toplevel(root)
-    toast.overrideredirect(True)  
-    toast.geometry("+500+400") 
+    global toast_window
+
+    if toast_window is not None:
+        try:
+            toast_window.destroy()
+        except:
+            pass
+
+    toast_window = tk.Toplevel(root)
+    toast_window.overrideredirect(True)  
+    toast_window.geometry("+500+400") 
 
     bg_color = "white"
     fg_color = "black"
     if (theme == 1):
         bg_color = "black"
         fg_color = "white"
-    toast_label = tk.Label(toast, text=message, bg=bg_color, fg=fg_color, padx=20, pady=10)
+    toast_label = tk.Label(toast_window, text=message, bg=bg_color, fg=fg_color, padx=20, pady=10)
     toast_label.pack()
 
     def start_fade(window, remaining_time):
-        for alpha in range(10, -1, -1):
-            alpha /= 10 
+        if remaining_time > 0:
+            alpha = remaining_time / duration
             window.attributes("-alpha", alpha)
-            window.update()
-            window.after(remaining_time // 10)  
+            window.after(50, start_fade, window, remaining_time - 50)
+        else:
+            window.destroy()
 
-        window.destroy()
 
     try:
-        toast.after(2000, start_fade, toast, duration - 4800)
+        toast_window.after(after, start_fade, toast_window, duration - 4800)
     except:
         pass
-    
-
-""""
-Loads the process mapping from a JSON file located at the specified path.
-
-Args:
-    mapping_file_path (str): The path to the JSON file containing the process mapping.
-
-Returns:
-    dict: A dictionary containing the process name mapping.
-"""
 
 current_os = is_supported_os()
 """
@@ -869,7 +872,7 @@ frame.pack(padx=40, pady=40)
 label = tk.Label(frame, text=os.getenv("ADD_GAME"), font=(poppins_font, 12))
 label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
 
-game_entry = tk.Entry(frame, width=30, font=(poppins_font, 12), cursor="hand2")
+game_entry = tk.Entry(frame, width=30, font=(poppins_font, 12), cursor="xterm")
 game_entry.grid(row=0, column=1, padx=5, pady=5)
 game_entry.bind("<Return>", add_game)
 
@@ -895,12 +898,84 @@ start_button.grid(row=2, column=2, columnspan=2, padx=5, pady=5, sticky="ew")
 default_bio_label = tk.Label(frame, text=os.getenv("DEFAULT_BIO_LABEL"), font=(poppins_font, 12))
 default_bio_label.grid(row=3, column=0, sticky="w", padx=5, pady=5)
 
-default_bio_text = tk.Text(frame, width=50, height=4, font=(poppins_font, 12), cursor="hand2")
+default_bio_text = tk.Text(frame, width=50, height=4, font=(poppins_font, 12), cursor="xterm")
 default_bio_text.insert(tk.END, default_bio)
 default_bio_text.grid(row=3, column=1, columnspan=3, padx=5, pady=5)
 
 chthema = tk.Button(frame, text=os.getenv("CHANGE_THEMA_LABEL"), command=change_theme, font=(poppins_font, 12), cursor="hand2")
-chthema.grid(row=4, column=0, columnspan=4, padx=5, pady=5)
+chthema.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
+
+
+debug_mode_var = tk.BooleanVar()
+hint_mode_var = tk.BooleanVar()
+
+debug_mode_button = tk.Checkbutton(frame, text=os.getenv("DEBUG_MODE_LABEL"), variable=debug_mode_var, command=lambda: toggle_debug_mode(False), font=(poppins_font, 12), cursor="hand2")
+debug_mode_button.grid(row=4, column=2, columnspan=2, padx=5, pady=5)
+
+
+hint_mode_button = tk.Checkbutton(frame, text=os.getenv("SHOW_HINTS"), variable=hint_mode_var, command=lambda: toggle_hint_mode(False), font=(poppins_font, 12), cursor="hand2")
+hint_mode_button.grid(row=5, column=2, columnspan=2, padx=5, pady=5)
+
+if theme == 0:
+    remove_button.configure(fg="maroon")
+    remove_all_button.configure(fg="violet red")
+    start_button.configure(fg="SteelBlue1")
+    debug_mode_button.configure(selectcolor="black")
+    hint_mode_button.configure(selectcolor="black")
+else:
+    remove_button.configure(fg="hot pink")
+    remove_all_button.configure(fg="red")
+    start_button.configure(fg="DeepSkyBlue2")
+    debug_mode_button.configure(selectcolor="white")
+    hint_mode_button.configure(selectcolor="white")
+
+if os.getenv("DEBUG") == "true":
+    debug_mode_var.set(True)
+
+if os.getenv("HINTS") == "true":
+    hint_mode_var.set(True)
+
+# HINTS
+def on_enter(hint_message=None):
+    if os.getenv("HINTS") == "true":
+        if hint_message == "default_bio_text":
+            show_toast(os.getenv("DEFAULT_BIO_HINT"), duration=20000)
+        if hint_message == "debug_mode_button":
+            show_toast(os.getenv("DEBUG_MODE_HINT"), duration=20000)
+        if hint_message == "remove_button":
+            show_toast(os.getenv("REMOVE_HINT"), duration=20000)
+        if hint_message == "remove_all_button":
+            show_toast(os.getenv("REMOVE_ALL_HINT"), duration=20000)
+        if hint_message == "start_button":
+            show_toast(os.getenv("START_HINT"), duration=20000)
+        if hint_message == "chthema":
+            show_toast(os.getenv("CHANGE_THEMA_HINT"), duration=20000)
+        if hint_message == "list_button":
+            show_toast(os.getenv("GAME_LIST_HINT"), duration=20000)
+
+def on_leave(event):
+    global toast_window
+    if toast_window is not None:
+        try:
+            toast_window.destroy()
+        except:
+            pass
+    toast_window = None
+
+default_bio_text.bind("<Enter>", lambda event: on_enter(hint_message="default_bio_text"))
+default_bio_text.bind("<Leave>", on_leave)
+debug_mode_button.bind("<Enter>", lambda event: on_enter(hint_message="debug_mode_button"))
+debug_mode_button.bind("<Leave>", on_leave)
+remove_button.bind("<Enter>", lambda event: on_enter(hint_message="remove_button"))
+remove_button.bind("<Leave>", on_leave)
+remove_all_button.bind("<Enter>", lambda event: on_enter(hint_message="remove_all_button"))
+remove_all_button.bind("<Leave>", on_leave)
+start_button.bind("<Enter>", lambda event: on_enter(hint_message="start_button"))
+start_button.bind("<Leave>", on_leave)
+chthema.bind("<Enter>", lambda event: on_enter(hint_message="chthema"))
+chthema.bind("<Leave>", on_leave)
+list_button.bind("<Enter>", lambda event: on_enter(hint_message="list_button"))
+list_button.bind("<Leave>", on_leave)
 
 emoji_font = tkfont.Font(family="Segoe UI Emoji", size=12)
 emoji_font2 = tkfont.Font(family="Noto Color Emoji", size=12)
