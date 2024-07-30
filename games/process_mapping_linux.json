@@ -64,5 +64,12 @@
     "IN HEAT.x86_64": ["IN HEAT", "IN HEAT.x86_64"],
     "Spiritfarer.x86_64": ["Spiritfarer", "Spiritfarer.x86_64"],
     "Tabletop Simulator.x86_64": ["Tabletop Simulator", "Tabletop Simulator.x86_64"],
-    "worldbox": ["WorldBox", "worldbox"]
+    "worldbox": ["WorldBox", "worldbox"],
+    "fw.x86_64": ["Firewatch", "fw.x86_64"],
+    "push me pull you.x86": ["Push Me Pull You (x86)", "push me pull you.x86"],
+    "push me pull you.x86_64": ["Push Me Pull You", "push me pull you.x86_64"],
+    "SlimeRancher.x86": ["Slime Rancher (x86)", "SlimeRancher.x86"],
+    "SlimeRancher.x86_64": ["Slime Rancher", "SlimeRancher.x86_64"],
+    "FindLoveorDieTryingByAudenChoWong.py": ["Find Love or Die Trying (Steam)", "FindLoveorDieTryingByAudenChoWong.py"],
+    "FindLoveorDieTryingByAudenChoWong.sh": ["Find Love or Die Trying", "FindLoveorDieTryingByAudenChoWong.sh"]
 }

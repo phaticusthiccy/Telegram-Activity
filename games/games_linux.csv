@@ -9,6 +9,8 @@ CubeRacer.x86,Cube Racer,-,-,-,-
 DyingLightGame,Dying Light,-,-,-,-
 EscapeSimulator,Escape Simulator,-,-,-,-
 FTL,Faster Than Light,-,-,-,-
+FindLoveorDieTryingByAudenChoWong.py,Find Love or Die Trying (Steam),-,-,-,-
+FindLoveorDieTryingByAudenChoWong.sh,Find Love or Die Trying,-,-,-,-
 FishingPlanet.X86,Fishing Planet,-,-,-,-
 FishingPlanet.X86_64,Fishing Planet (x86),-,-,-,-
 IN HEAT.x86_64,IN HEAT,-,-,-,-
@@ -30,6 +32,8 @@ SakuraAlien.sh,Sakura Alien,sakura alien,-,-,-
 SakuraSuccubus5.sh,Sakura Succubus 5,sakura succubus 5,-,-,-
 Skyhill.x86,Skyhill (X86),-,-,-,-
 Skyhill.x86_64,Skyhill,-,-,-,-
+SlimeRancher.x86,Slime Rancher (x86),-,-,-,-
+SlimeRancher.x86_64,Slime Rancher,-,-,-,-
 Spiritfarer.x86_64,Spiritfarer,-,-,-,-
 Tabletop Simulator.x86_64,Tabletop Simulator,-,-,-,-
 Terraria,Terraria,-,-,-,-
@@ -50,6 +54,7 @@ dontstarve_steam_x64,Don't Starve Together (x86),dontstarve,-,-,-
 dota.sh,Dota 2,dota,-,-,-
 eurotrucks2,Euro Truck Simulator 2,ets,ets2,euro truck,-
 factorio,Factorio,-,-,-,-
+fw.x86_64,Firewatch,-,-,-,-
 limbo,Limbo,-,-,-,-
 mb_warband_linux,Mount & Blade: Warband,warband,-,-,-
 mow2.sh,Men of War II,-,-,-,-
@@ -58,6 +63,8 @@ payday2_release,Payday 2,payday 2,-,-,-
 portal2.sh,Portal 2,portal 2,-,-,-
 postal2-bin,POSTAL 2,-,-,-,-
 projectzomboid.sh,Project Zomboid,project zomboid,-,-,-
+push me pull you.x86,Push Me Pull You (x86),-,-,-,-
+push me pull you.x86_64,Push Me Pull You,-,-,-,-
 retroarch.sh,RetroArch,retroarch,-,-,-
 spacehaven,Space Haven,-,-,-,-
 start_RimWorld.sh,RimWorld,rimworld,-,-,-
