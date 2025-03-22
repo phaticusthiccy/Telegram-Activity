@@ -39,6 +39,7 @@ Note: This application requires a Telegram account and API credentials to functi
 
 
 import asyncio
+from turtle import color
 import psutil
 import sys
 import time
@@ -55,6 +56,7 @@ from PIL import Image, ImageTk
 import requests
 import sv_ttk
 import logging
+from datetime import datetime
 
 """
 Configures the logging system for the application.
@@ -90,6 +92,72 @@ ACTION_EMOJI_60_TO_120_MIN = os.getenv("ACTION_EMOJI_60_TO_120_MIN")
 ACTION_EMOJI_MORE_120_MIN = os.getenv("ACTION_EMOJI_MORE_120_MIN")
 global latest_version
 global local_version
+STATS_FILE = os.getenv("STATS_FILE")
+game_stats = json.load(open('./game_stats.json'))
+
+def log_game_start(game_name):
+    """
+    Logs the start of a game session in the game_stats dictionary.
+
+    Args:
+        game_name (str): The name of the game being played.
+
+    Notes:
+        The start time is recorded in ISO format using datetime.now().isoformat().
+        If the game is not already in the daily stats dictionary, a new entry is created with a start time and total duration of 0.
+    """
+    current_time = datetime.now().isoformat()
+    if game_name not in game_stats["daily"]:
+        game_stats["daily"][game_name] = {"start_time": current_time, "total_duration": 0}
+
+def log_game_end(game_name):
+    """
+    Logs the end of a game session in the game_stats dictionary.
+
+    Args:
+        game_name (str): The name of the game being played.
+
+    Notes:
+        The end time is recorded in ISO format using datetime.now().isoformat().
+        The duration of the session is calculated by taking the difference between the start and end times.
+        The total duration of all sessions for the game is incremented by the duration of this session.
+        The weekly stats are updated by calling _update_weekly_stats.
+        The updated game_stats dictionary is written to the file specified by STATS_FILE by calling _save_stats_to_file.
+    """
+    if game_name in game_stats["daily"]:
+        start_time = datetime.fromisoformat(game_stats["daily"][game_name]["start_time"])
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds() / 60
+        game_stats["daily"][game_name]["total_duration"] += duration
+        _update_weekly_stats(game_name, duration)
+        _save_stats_to_file()
+
+def _update_weekly_stats(game_name, duration):
+    """
+    Updates the weekly game statistics with the duration of a game session.
+
+    Args:
+        game_name (str): The name of the game being played.
+        duration (float): The duration of the game session in minutes.
+
+    Notes:
+        The current week number is determined using the isocalendar() method.
+        If the week number is not present in the weekly stats, a new entry is created.
+        If the game is not present in the weekly stats for the current week, a new entry is created.
+        The duration of the game session is added to the total duration for the game in the weekly stats.
+    """
+    week_number = datetime.now().isocalendar()[1]
+    if week_number not in game_stats["weekly"]:
+        game_stats["weekly"][week_number] = {}
+    if game_name not in game_stats["weekly"][week_number]:
+        game_stats["weekly"][week_number][game_name] = 0
+    game_stats["weekly"][week_number][game_name] += duration
+
+def _save_stats_to_file():
+    """Writes the game_stats dictionary to the file specified by STATS_FILE in JSON format."""
+    with open(STATS_FILE, 'w') as f:
+        json.dump(game_stats, f)
+
 
 def get_latest_version():
     """
@@ -249,6 +317,47 @@ def capitalize_first_letters(text):
     capitalized_words = [word.capitalize() for word in words]
     return ' '.join(capitalized_words)
 
+def show_stats():
+    """
+    Creates a new window to show game statistics.
+    
+    This function creates a new window with two radio buttons and a button labeled "Rapor Oluştur". The radio buttons allow the user to select between daily and weekly statistics. When the button is clicked, the function `_generate_report` is called with the selected time frame as an argument.
+    """
+    stats_window = tk.Toplevel(root)
+    stats_window.title("Oyun İstatistikleri")
+    
+    time_frame = tk.StringVar(value="daily")
+    tk.Radiobutton(stats_window, text=os.getenv("DAILY"), variable=time_frame, value="daily", selectcolor="gray").pack()
+    tk.Radiobutton(stats_window, text=os.getenv("WEEKLY"), variable=time_frame, value="weekly", selectcolor="gray").pack()
+    
+    tk.Button(stats_window, text=os.getenv("GENERATE_REPORT"), command=lambda: _generate_report(time_frame.get())).pack()
+
+def _generate_report(time_frame):
+    """
+    Generates a bar chart with the total durations of each game in the given time frame.
+    
+    Args:
+        time_frame (str): The time frame to generate the report for, either "daily" or "weekly".
+    
+    Returns:
+        None
+    """
+    import matplotlib.pyplot as plt
+    data = game_stats[time_frame]
+    
+    games = list(data.keys())
+    durations = [sum(data[game].values()) if time_frame == "weekly" else data[game]["total_duration"] for game in games]
+    
+    plt.bar(games, durations)
+    plt.ylabel(os.getenv("DURATION"))
+    firstLabelValue = time_frame.capitalize()
+    if os.getenv("LANG") == "tr":
+        firstLabelValue = "Günlük" if firstLabelValue == "Daily" else firstLabelValue
+        firstLabelValue = "Haftalık" if firstLabelValue == "Weekly" else firstLabelValue
+    
+    plt.title(f'{firstLabelValue} {os.getenv("GAME_DURATION")}')
+    plt.show()
+
 def find_process_name(name):
     """
     Finds the process name that matches the given name.
@@ -310,6 +419,12 @@ def is_any_game_running(game_names):
 
 async def update_status(game_name, elapsed_time, games):
     global start
+
+    if game_name:
+        log_game_start(game_name)
+    else:
+        for game in list(game_stats["daily"].keys()):
+            log_game_end(game)
 
     if game_name is False and elapsed_time is False:
         try:
@@ -905,6 +1020,8 @@ default_bio_text.grid(row=3, column=1, columnspan=3, padx=5, pady=5)
 chthema = tk.Button(frame, text=os.getenv("CHANGE_THEMA_LABEL"), command=change_theme, font=(poppins_font, 12), cursor="hand2")
 chthema.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
 
+stats_button = tk.Button(frame, text=os.getenv("STATS"), command=show_stats, font=(poppins_font, 12), cursor="hand2")
+stats_button.grid(row=5, column=0, padx=5, pady=5)
 
 debug_mode_var = tk.BooleanVar()
 hint_mode_var = tk.BooleanVar()
