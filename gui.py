@@ -60,6 +60,7 @@ import requests
 import sv_ttk
 import logging
 from datetime import datetime
+import GPUtil
 
 """
 Configures the logging system for the application.
@@ -120,6 +121,27 @@ else:
     default_bio = os.getenv("DEFAULT_BIO")
 
 
+def get_cpu_usage():
+    """
+    Gets the current CPU usage as a percentage.
+
+    Args:
+        process_name (str): The name of the process to get the CPU usage for.
+
+    Returns:
+        float: The current CPU usage as a percentage.
+    """
+    return psutil.cpu_percent()
+
+def get_gpu_usage():
+    """
+    Gets the current GPU usage as a percentage.
+
+    Returns:
+        float: The current GPU usage as a percentage.
+    """
+    return (max(GPUtil.getGPUs(), key=lambda gpu: gpu.load).load) * 100
+
 def log_game_start(game_name):
     """
     Logs the start of a game session in the game_stats dictionary.
@@ -133,7 +155,7 @@ def log_game_start(game_name):
     """
     current_time = datetime.now().isoformat()
     if game_name not in game_stats["daily"]:
-        game_stats["daily"][game_name] = {"start_time": current_time, "total_duration": 0}
+        game_stats["daily"][game_name] = {"start_time": current_time, "total_duration": 1}
 
 def log_game_end(game_name):
     """
@@ -341,11 +363,9 @@ def capitalize_first_letters(text):
 def show_stats():
     """
     Creates a new window to show game statistics.
-
-    This function creates a new window with two radio buttons and a button labeled "Rapor Oluştur". The radio buttons allow the user to select between daily and weekly statistics. When the button is clicked, the function `_generate_report` is called with the selected time frame as an argument.
     """
     stats_window = tk.Toplevel(root)
-    stats_window.title("Oyun İstatistikleri")
+    stats_window.title(os.getenv("STATS_TITLE"))
 
     time_frame = tk.StringVar(value="daily")
     tk.Radiobutton(stats_window, text=os.getenv("DAILY"), variable=time_frame, value="daily", selectcolor="gray").pack()
@@ -363,19 +383,159 @@ def _generate_report(time_frame):
         None
     """
     import matplotlib.pyplot as plt
-    data = game_stats[time_frame]
+    import numpy as np
+    from matplotlib.patches import ConnectionPatch
+    from matplotlib.widgets import Button
 
-    games = list(data.keys())
-    durations = [data[game]["total_duration"] for game in games]
+    data = game_stats["daily"] 
 
-    plt.bar(games, durations)
-    plt.ylabel(os.getenv("DURATION"))
-    firstLabelValue = time_frame.capitalize()
-    if os.getenv("LANG") == "tr":
-        firstLabelValue = "Günlük" if firstLabelValue == "Daily" else firstLabelValue
+    labels = list(data.keys())
+    total_durations = [v['total_duration'] for v in data.values()]
+    sum_total = sum(total_durations)
+    overall_ratios = [dur / sum_total for dur in total_durations]
 
-    plt.title(f'{firstLabelValue} {os.getenv("GAME_DURATION")}')
+    fig = plt.figure(figsize=(12, 6))
+    ax1 = fig.add_axes([0.3, 0.1, 0.35, 0.8])
+    ax2 = fig.add_axes([0.7, 0.1, 0.25, 0.8])
+
+    def draw_plots(selected_label):
+        idx = labels.index(selected_label)
+        explode = [0] * len(labels)
+        explode[idx] = 0.1
+        ax1.clear()
+        ax2.clear()
+
+        angle = -180 * overall_ratios[idx]
+        wedges, texts, autotexts = ax1.pie(overall_ratios, autopct='%1.1f%%',
+                                        startangle=angle, labels=labels,
+                                        explode=explode, textprops={'fontsize': 8})
+        
+        game_data = data[selected_label]
+        played_time = game_data['total_duration']
+        ax1.text(0, -1.5, f'{os.getenv("PLAYED_TIME")} {played_time:.2f} {os.getenv("DURATION")}', 
+                ha='center', fontsize=10, bbox=dict(facecolor='white', alpha=0.5))
+        
+        wedge = wedges[idx]
+        theta1, theta2 = wedge.theta1, wedge.theta2
+        center, r = wedge.center, wedge.r
+        
+        game_data = data[selected_label]
+        cpu = game_data['avgCPUusage'] / 100
+        gpu = game_data['avgGPUusage'] / 100
+        age_ratios = [cpu, gpu]
+        age_labels = ['CPU', 'GPU']
+        
+        bottom = 1
+        width = 0.2
+        colors = ['#1f77b4', '#ff7f0e']
+        
+        for j, (height, label) in enumerate(reversed(list(zip(age_ratios, age_labels)))): 
+            bottom -= height
+            bars = ax2.bar(0, height, width, bottom=bottom, color=colors[j],
+                        label=label, alpha=0.7)
+            ax2.bar_label(bars, labels=[f"{height*100:.0f}%"],
+                        label_type='center', color='white')
+        
+        
+        ax2.set_title(f'{os.getenv("COMPUTE_USAGE")} ({selected_label})', pad=20)
+        ax2.legend(loc='upper right')
+        ax2.axis('off')
+        ax2.set_xlim(-2.5 * width, 2.5 * width)
+        
+        bar_top = 1.0
+        bar_bottom = 1.0 - sum(age_ratios)
+        
+        x_top = r * np.cos(np.pi / 180 * theta2) + center[0]
+        y_top = r * np.sin(np.pi / 180 * theta2) + center[1]
+        con_top = ConnectionPatch(xyA=(-width/2, bar_top), coordsA=ax2.transData,
+                                xyB=(x_top, y_top), coordsB=ax1.transData, color='gray')
+        ax2.add_artist(con_top)
+        
+        x_bot = r * np.cos(np.pi / 180 * theta1) + center[0]
+        y_bot = r * np.sin(np.pi / 180 * theta1) + center[1]
+        con_bot = ConnectionPatch(xyA=(-width/2, bar_bottom), coordsA=ax2.transData,
+                                xyB=(x_bot, y_bot), coordsB=ax1.transData, color='gray')
+        ax2.add_artist(con_bot)
+        
+        fig.canvas.draw_idle()
+
+    try:
+        current_selection = labels[0]
+    except:
+        messagebox.showinfo("Error", os.getenv("NO_GAME_DATA"))
+        return
+        
+    draw_plots(current_selection)
+
+    menu_start_pos = [-0.25, 0.1, 0.2, 0.8]
+    menu_end_pos = [0.05, 0.1, 0.2, 0.8]
+
+    menu_ax = fig.add_axes(menu_start_pos)
+    menu_ax.set_xlim(0, 1)
+    menu_ax.set_ylim(0, 1)
+    menu_ax.set_clip_on(True)
+    menu_ax.axis('off')
+    menu_texts = []
+
+    n = len(labels)
+    for i, lab in enumerate(labels):
+        y = 0.9 - i * (0.8 / n)
+        txt = menu_ax.text(0.1, y, lab, fontsize=12, picker=True,
+                        bbox=dict(boxstyle="round", fc="white", ec="black"))
+        txt.set_clip_on(True)
+        menu_texts.append(txt)
+
+    global menu_visible
+    menu_visible = False
+
+    def slide_menu(show=True):
+        start = menu_start_pos[0] if show else menu_end_pos[0]
+        end = menu_end_pos[0] if show else menu_start_pos[0]
+        steps = 20
+        delta = (end - start) / steps
+        for i in range(steps):
+            new_x = start + delta * (i + 1)
+            pos = [new_x, menu_end_pos[1], menu_end_pos[2], menu_end_pos[3]]
+            menu_ax.set_position(pos)
+            fig.canvas.draw_idle()
+            plt.pause(0.01)
+
+    def on_menu_click(event):
+        global current_selection, menu_visible
+        if menu_visible and event.inaxes != menu_ax:
+            slide_menu(show=False)
+            menu_visible = False
+
+    def on_menu_pick(event):
+        global current_selection, menu_visible
+        artist = event.artist
+        if artist in menu_texts:
+            selected = artist.get_text()
+            current_selection = selected
+            draw_plots(selected)
+            slide_menu(show=False)
+            menu_visible = False
+
+    fig.canvas.mpl_connect('pick_event', on_menu_pick)
+    fig.canvas.mpl_connect('button_press_event', on_menu_click)
+
+    ax_button = fig.add_axes([0.01, 0.9, 0.1, 0.05])
+    menu_button = Button(ax_button, 'Menu')
+
+    def toggle_menu(event):
+        global menu_visible
+        if not menu_visible:
+            slide_menu(show=True)
+            menu_visible = True
+        else:
+            slide_menu(show=False)
+            menu_visible = False
+
+    menu_button.on_clicked(toggle_menu)
+
     plt.show()
+
+
 
 def find_process_name(name):
     """
@@ -517,7 +677,7 @@ async def update_status(game_name, elapsed_time, games):
         else:
             action_emoji = ACTION_EMOJI_MORE_120_MIN
 
-        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name_cap).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "").replace(" (x64)", "")
+        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name_cap).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "").replace(" (x64)", "").replace(" (dx11)", "").replace(" (dx12)", "")
         try:
             await client(UpdateProfileRequest(about=new_status))
             if playing_game != friendly_game_name_cap:
@@ -556,24 +716,9 @@ current_game = None
 async def main(games):
     """
     Continuously monitors a list of games and updates the status of the currently running game.
-
-    This function runs in an event loop and checks every `check_interval` seconds if any of the provided games are currently running. If a game is running, it updates the elapsed time for that game. If no game is running, it updates the status to indicate that no game is running.
-
-    Args:
-        games (list): A list of game objects to monitor.
-
-    Returns:
-        None
     """
     global current_game
 
-    """
-    Finds the running Python process and sets its priority to the IDLE_PRIORITY_CLASS.
-
-    This code iterates through all running processes using the `psutil.process_iter()` function, and looks for a process with the name 'python.exe'. Once found, it sets the priority of that process to the IDLE_PRIORITY_CLASS, which will cause the Python process to run at a lower priority than other processes on the system.
-
-    This can be useful for long-running Python scripts or applications that should not consume too many system resources, allowing other important processes to run without being impacted.
-    """
     for proc in psutil.process_iter(['name', 'exe', 'username']):
         if proc.info['name'] == 'python.exe':
             try:
@@ -598,6 +743,15 @@ async def main(games):
                 start_time = time.time()
             elapsed_time = int((time.time() - start_time) / check_interval)
             await update_status(game_name, elapsed_time, games)
+
+            cpu_usage = get_cpu_usage()
+            gpu_usage = get_gpu_usage()
+
+            if game_name in game_stats["daily"]:
+                game_stats["daily"][game_name]["avgCPUusage"] = cpu_usage if cpu_usage is not None else 1
+                game_stats["daily"][game_name]["avgGPUusage"] = gpu_usage if gpu_usage is not None else 1
+                _save_stats_to_file()
+
         else:
             current_game = None
             await update_status(False, False, games)
@@ -607,6 +761,7 @@ async def main(games):
         except:
             pass
         await asyncio.sleep(check_interval)
+
 
 def start_monitoring(games):
     """

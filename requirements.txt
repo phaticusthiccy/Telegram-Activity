@@ -6,3 +6,5 @@ pillow
 requests
 sv_ttk
 matplotlib
+GPUtil
+numpy
