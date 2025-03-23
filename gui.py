@@ -11,6 +11,7 @@ The main features of the application include:
 4. Updating the user's Telegram status with the current game being played and the elapsed time.
 5. Displaying notifications and error messages.
 6. Changing the application theme between light and dark mode.
+7. Sending Telegram notifications to specified users when a game starts.
 
 The application uses the Telethon library to interact with the Telegram API and update the user's status. It also utilizes the psutil library to monitor running processes and detect the games being played.
 
@@ -24,6 +25,7 @@ The main components of the GUI include:
 - Buttons for removing games from the list, displaying a list of available games, and starting the monitoring process.
 - A text area for setting the default biography message.
 - A button for changing the application theme.
+- An entry field for specifying Telegram usernames to notify.
 
 The application also includes logging functionality to log debug messages, errors, and other information to the console and a log file.
 
@@ -32,7 +34,8 @@ Usage:
 2. Run the script to launch the GUI application.
 3. Add the games you want to monitor to the list.
 4. Set the default biography message.
-5. Click the "Start" button to begin monitoring and updating your Telegram status.
+5. Enter Telegram usernames to notify (optional).
+6. Click the "Start" button to begin monitoring and updating your Telegram status.
 
 Note: This application requires a Telegram account and API credentials to function correctly.
 """
@@ -94,6 +97,28 @@ global latest_version
 global local_version
 STATS_FILE = os.getenv("STATS_FILE")
 game_stats = json.load(open('./game_stats.json'))
+notification_usernames = []
+global playing_game
+playing_game = None
+notification_message_text_global = None
+
+if "notification_usernames" in game_stats:
+    notification_usernames = game_stats["notification_usernames"]
+else:
+    game_stats["notification_usernames"] = []
+
+if "notification_message" in game_stats:
+    notification_message_text_global_str = game_stats["notification_message"]
+else:
+    game_stats["notification_message"] = os.getenv("NOTIFICATION_MESSAGE")
+    notification_message_text_global_str = os.getenv("NOTIFICATION_MESSAGE")
+
+if "default_bio" in game_stats:
+    default_bio = game_stats["default_bio"]
+else:
+    game_stats["default_bio"] = os.getenv("DEFAULT_BIO")
+    default_bio = os.getenv("DEFAULT_BIO")
+
 
 def log_game_start(game_name):
     """
@@ -121,7 +146,6 @@ def log_game_end(game_name):
         The end time is recorded in ISO format using datetime.now().isoformat().
         The duration of the session is calculated by taking the difference between the start and end times.
         The total duration of all sessions for the game is incremented by the duration of this session.
-        The weekly stats are updated by calling _update_weekly_stats.
         The updated game_stats dictionary is written to the file specified by STATS_FILE by calling _save_stats_to_file.
     """
     if game_name in game_stats["daily"]:
@@ -130,42 +154,36 @@ def log_game_end(game_name):
         duration = (end_time - start_time).total_seconds() / 60
         game_stats["daily"][game_name]["total_duration"] += duration
         game_stats["daily"][game_name]["total_duration"] = game_stats["daily"][game_name]["total_duration"] / 10
-        _update_weekly_stats(game_name, duration)
         _save_stats_to_file()
-
-def _update_weekly_stats(game_name, duration):
-    """
-    Updates the weekly game statistics with the duration of a game session.
-
-    Args:
-        game_name (str): The name of the game being played.
-        duration (float): The duration of the game session in minutes.
-
-    Notes:
-        The current week number is determined using the isocalendar() method.
-        If the week number is not present in the weekly stats, a new entry is created.
-        If the game is not present in the weekly stats for the current week, a new entry is created.
-        The duration of the game session is added to the total duration for the game in the weekly stats.
-    """
-    week_number = datetime.now().isocalendar()[1]
-    if week_number not in game_stats["weekly"]:
-        game_stats["weekly"][week_number] = {}
-    if game_name not in game_stats["weekly"][week_number]:
-        game_stats["weekly"][week_number][game_name] = 0
-    game_stats["weekly"][week_number][game_name] += duration
-    game_stats["weekly"][week_number][game_name] += game_stats["weekly"][week_number][game_name] / 10
 
 
 def _save_stats_to_file():
     """Writes the game_stats dictionary to the file specified by STATS_FILE in JSON format."""
     with open(STATS_FILE, 'w') as f:
-        json.dump(game_stats, f)
+        json.dump(game_stats, f, indent=4)
+
+async def get_first_name(username):
+    """
+    Asynchronously retrieves the first name of a Telegram user given their username.
+
+    Args:
+        username (str): The Telegram username of the user.
+
+    Returns:
+        str: The first name of the user, or None if the user is not found or an error occurs.
+    """
+    try:
+        user = await client.get_entity(username)
+        return user.first_name
+    except Exception as e:
+        logger.warning(f"Could not get first name for {username}: {e}")
+        return False
 
 
 def get_latest_version():
     """
     Retrieves the latest version information from a remote source.
-    
+
     Returns:
         dict: A dictionary containing the latest version and update message, or None if an error occurred.
     """
@@ -199,10 +217,10 @@ async def print_me():
 def checkAuth():
     """
     Checks that the required configuration values are set before running the application.
-    
+
     Raises:
         ValueError: If any of the required configuration values are missing.
-    
+
     Returns:
         bool: True if all required configuration values are set, False otherwise.
     """
@@ -228,10 +246,10 @@ logger.info(os.getenv("DEBUG_VERSION") + local_version) if os.getenv("DEBUG") ==
 def toggle_debug_mode(fromTheme):
     """
     Toggles the debug mode for the application.
-    
+
     Args:
         fromTheme (bool): Indicates whether the toggle was triggered from a theme change.
-    
+
     Returns:
         None
     """
@@ -268,9 +286,9 @@ def toggle_hint_mode(fromTheme):
 def is_supported_os():
     """
     Returns the current system platform as a lowercase string.
-    
+
     This function checks the current system platform and returns it as a lowercase string. If the DEBUG environment variable is set to "true", it will also log the system platform to the logger.
-    
+
     Returns:
         str: The current system platform as a lowercase string.
     """
@@ -281,7 +299,7 @@ def is_supported_os():
 def load_process_mapping(file_path):
     """
     The function `load_process_mapping` reads and loads a JSON file from the specified file path.
-    
+
     :param file_path: The `file_path` parameter in the `load_process_mapping` function is a string that
     represents the path to the file containing the process mapping data that you want to load and
     process. This file should be in a format that can be loaded using the `json.load()` function, such
@@ -295,7 +313,7 @@ def load_process_mapping(file_path):
 def handle_exit(signum, frame):
     """
     Handles the exit signal for the application.
-    
+
     When the application receives an exit signal (e.g. from the user closing the window),
     this function is called to quit the main event loop and exit the application.
     """
@@ -305,14 +323,14 @@ def handle_exit(signum, frame):
         pass
     logger.info(os.getenv("DEBUG_LOGOUT") + local_version) if os.getenv("DEBUG") == "true" else None
     sys.exit()
-    
+
 def capitalize_first_letters(text):
     """
     Capitalizes the first letter of each word in the given text.
-    
+
     Args:
         text (str): The input text to capitalize.
-    
+
     Returns:
         str: The input text with the first letter of each word capitalized.
     """
@@ -323,51 +341,49 @@ def capitalize_first_letters(text):
 def show_stats():
     """
     Creates a new window to show game statistics.
-    
+
     This function creates a new window with two radio buttons and a button labeled "Rapor Oluştur". The radio buttons allow the user to select between daily and weekly statistics. When the button is clicked, the function `_generate_report` is called with the selected time frame as an argument.
     """
     stats_window = tk.Toplevel(root)
     stats_window.title("Oyun İstatistikleri")
-    
+
     time_frame = tk.StringVar(value="daily")
     tk.Radiobutton(stats_window, text=os.getenv("DAILY"), variable=time_frame, value="daily", selectcolor="gray").pack()
-    tk.Radiobutton(stats_window, text=os.getenv("WEEKLY"), variable=time_frame, value="weekly", selectcolor="gray").pack()
-    
+
     tk.Button(stats_window, text=os.getenv("GENERATE_REPORT"), command=lambda: _generate_report(time_frame.get())).pack()
 
 def _generate_report(time_frame):
     """
     Generates a bar chart with the total durations of each game in the given time frame.
-    
+
     Args:
         time_frame (str): The time frame to generate the report for, either "daily" or "weekly".
-    
+
     Returns:
         None
     """
     import matplotlib.pyplot as plt
     data = game_stats[time_frame]
-    
+
     games = list(data.keys())
-    durations = [sum(data[game].values()) if time_frame == "weekly" else data[game]["total_duration"] for game in games]
-    
+    durations = [data[game]["total_duration"] for game in games]
+
     plt.bar(games, durations)
     plt.ylabel(os.getenv("DURATION"))
     firstLabelValue = time_frame.capitalize()
     if os.getenv("LANG") == "tr":
         firstLabelValue = "Günlük" if firstLabelValue == "Daily" else firstLabelValue
-        firstLabelValue = "Haftalık" if firstLabelValue == "Weekly" else firstLabelValue
-    
+
     plt.title(f'{firstLabelValue} {os.getenv("GAME_DURATION")}')
     plt.show()
 
 def find_process_name(name):
     """
     Finds the process name that matches the given name.
-    
+
     Args:
         name (str): The name to search for.
-    
+
     Returns:
         str or False: The matching process name, or False if no match is found.
     """
@@ -380,10 +396,10 @@ def find_process_name(name):
 def get_process_name(friendly_name):
     """
     Returns the process name for the given friendly name. If no mapping is found, the original friendly name is returned.
-    
+
     Args:
         friendly_name (str): The friendly name to look up.
-    
+
     Returns:
         str: The process name for the given friendly name, or the original friendly name if no mapping is found.
     """
@@ -393,10 +409,10 @@ def get_friendly_name(process_name):
     """
     Returns a friendly name for the given process name. If no friendly name mapping is
     available, the original process name is returned.
-    
+
     Args:
         process_name (str): The name of the process to get a friendly name for.
-    
+
     Returns:
         str: The friendly name for the given process name, or the original process name
         if no friendly name mapping is available.
@@ -406,10 +422,10 @@ def get_friendly_name(process_name):
 def is_any_game_running(game_names):
     """
     Checks if any of the specified games are currently running.
-    
+
     Args:
         game_names (list[str]): A list of game names to check.
-    
+
     Returns:
         str or None: The name of the first game found to be running, or None if no games are running.
     """
@@ -422,6 +438,9 @@ def is_any_game_running(game_names):
 
 async def update_status(game_name, elapsed_time, games):
     global start
+    global notification_usernames
+    global playing_game
+    global notification_message_text_global
 
     if game_name:
         log_game_start(game_name)
@@ -432,6 +451,7 @@ async def update_status(game_name, elapsed_time, games):
     if game_name is False and elapsed_time is False:
         try:
             await client(UpdateProfileRequest(about=default_bio))
+            playing_game = None
         except Exception as e:
             logger.warning(os.getenv("ERROR_UPDATE_DEFAULT_BIO"))
             logger.critical(e) if os.getenv("DEBUG") == "true" else None
@@ -459,6 +479,9 @@ async def update_status(game_name, elapsed_time, games):
                 logger.critical(e) if os.getenv("DEBUG") == "true" else None
                 return handle_exit(None, None)
     else:
+        friendly_game_name = get_friendly_name(game_name)
+        friendly_game_name_cap = capitalize_first_letters(process_name_mapping[find_process_name(friendly_game_name)][0])
+
         if not start:
             start = True
             text_start = ""
@@ -482,8 +505,7 @@ async def update_status(game_name, elapsed_time, games):
                 logger.critical(e) if os.getenv("DEBUG") == "true" else None
                 return handle_exit(None, None)
 
-        friendly_game_name = get_friendly_name(game_name)
-        friendly_game_name = capitalize_first_letters(process_name_mapping[find_process_name(friendly_game_name)][0])
+
         action_emoji = ""
 
         if elapsed_time < 10:
@@ -494,49 +516,74 @@ async def update_status(game_name, elapsed_time, games):
             action_emoji = ACTION_EMOJI_60_TO_120_MIN
         else:
             action_emoji = ACTION_EMOJI_MORE_120_MIN
-        
-        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "").replace(" (x64)", "")
+
+        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name_cap).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "").replace(" (x64)", "")
         try:
             await client(UpdateProfileRequest(about=new_status))
-            logger.info(os.getenv("DEBUG_PLAYING") + friendly_game_name + os.getenv("DEBUG_PLAYTIME") + str(elapsed_time + 1)) if os.getenv("DEBUG") == "true" else None
+            if playing_game != friendly_game_name_cap:
+                if notification_usernames:
+                    notification_message_template = notification_message_text_global.get("1.0", tk.END).strip()
+                    if not notification_message_template:
+                        notification_message_template = os.getenv("NOTIFICATION_MESSAGE")
+
+                    now = datetime.now()
+                    current_time_str = now.strftime("%H:%M")
+
+
+                    for username in notification_usernames:
+                        first_name = await get_first_name(username)
+                        if first_name != False:
+                            notification_message = notification_message_template.replace("#game_name", friendly_game_name_cap).replace("#name", first_name).replace("#time", current_time_str)
+                            try:
+                                await client.send_message(username, notification_message)
+                                logger.info(os.getenv("DEBUG_NOTIFICATION_SENT").replace("#name", first_name).replace("#game_name", friendly_game_name_cap)) if os.getenv("DEBUG") == "true" else None
+                            except Exception as e:
+                                logger.warning(os.getenv("ERROR_NOTIFICATION_FAILED").replace("#name", first_name).replace("#game_name", friendly_game_name_cap)) if os.getenv("DEBUG") == "true" else None
+                                logger.critical(e) if os.getenv("DEBUG") == "true" else None
+                        
+
+            playing_game = friendly_game_name_cap
+            logger.info(os.getenv("DEBUG_PLAYING") + friendly_game_name_cap + os.getenv("DEBUG_PLAYTIME") + str(elapsed_time + 1)) if os.getenv("DEBUG") == "true" else None
         except Exception as e:
             messagebox.showerror(os.getenv("ERROR"), os.getenv("TOO_LONG"))
             logger.warning(os.getenv("TOO_LONG")) if os.getenv("DEBUG") == "true" else None
             logger.critical(e) if os.getenv("DEBUG") == "true" else None
             root.quit()
             sys.exit()
-            
+
+current_game = None
+
 async def main(games):
     """
     Continuously monitors a list of games and updates the status of the currently running game.
-    
+
     This function runs in an event loop and checks every `check_interval` seconds if any of the provided games are currently running. If a game is running, it updates the elapsed time for that game. If no game is running, it updates the status to indicate that no game is running.
-    
+
     Args:
         games (list): A list of game objects to monitor.
-    
+
     Returns:
         None
     """
+    global current_game
 
     """
     Finds the running Python process and sets its priority to the IDLE_PRIORITY_CLASS.
-    
+
     This code iterates through all running processes using the `psutil.process_iter()` function, and looks for a process with the name 'python.exe'. Once found, it sets the priority of that process to the IDLE_PRIORITY_CLASS, which will cause the Python process to run at a lower priority than other processes on the system.
-    
+
     This can be useful for long-running Python scripts or applications that should not consume too many system resources, allowing other important processes to run without being impacted.
     """
     for proc in psutil.process_iter(['name', 'exe', 'username']):
         if proc.info['name'] == 'python.exe':
-            try: 
+            try:
                 proc.nice(psutil.IDLE_PRIORITY_CLASS)
                 logger.debug(os.getenv("DEBUG_SET_LOW_PRIORITY")) if os.getenv("DEBUG") == "true" else None
-                break  
+                break
             except:
                 False
 
     start_time = None
-    current_game = None
     check_interval = int(os.getenv("INTERVAL_TIME"))
     while True:
         try:
@@ -546,14 +593,15 @@ async def main(games):
         game_name = is_any_game_running(games)
         if game_name:
             if current_game != game_name:
+                current_game_before_update = current_game
                 current_game = game_name
                 start_time = time.time()
             elapsed_time = int((time.time() - start_time) / check_interval)
-            await update_status(current_game, elapsed_time, games)
+            await update_status(game_name, elapsed_time, games)
         else:
+            current_game = None
             await update_status(False, False, games)
             start_time = None
-            current_game = None
         try:
             await client.disconnect()
         except:
@@ -563,7 +611,7 @@ async def main(games):
 def start_monitoring(games):
     """
     Starts the main event loop and creates a task to run the main application logic.
-    
+
     Args:
         games (list): A list of game objects to monitor.
     """
@@ -574,12 +622,12 @@ def start_monitoring(games):
 def add_game(event=None):
     """
     Adds a new game to the list of added games.
-    
+
     This function is called when the user enters a game name in the game entry field and presses the "Add" button or hits Enter. It retrieves the process name for the entered game, checks if it's already in the list of added games, and if not, adds it to the list and the games listbox. If the game is not found in the database, a warning message is displayed.
-    
+
     Args:
         event (Optional[tkinter.Event]): The event that triggered the function (e.g., button click or Enter key press).
-    
+
     Raises:
         None
     """
@@ -605,7 +653,7 @@ def add_game(event=None):
 def remove_game(arg=None):
     """
     Removes the selected game from the games_listbox and the added_games list.
-    
+
     If no game is selected, displays a warning message.
     """
     selected_game = games_listbox.curselection()
@@ -622,25 +670,39 @@ def remove_game(arg=None):
 def start_button_click():
     """
     Starts the game monitoring process when the user clicks the start button.
-    
+
     This function is called when the user clicks the "Start" button in the GUI. It retrieves the list of games selected in the listbox, checks if the default biography is within the character limit, and then starts the game monitoring process. If no games are selected, it displays a warning message.
     """
 
     games = [tuple(games_listbox.get(i).split(", ")) for i in range(games_listbox.size())]
     if games:
         global default_bio
-        default_bio = default_bio_text.get("1.0", tk.END)
+        global notification_usernames
+        global notification_message_text_global
+
+        default_bio = default_bio_text.get("1.0", tk.END).strip()
         if len(default_bio) > 70:
             messagebox.showerror(os.getenv("ERROR"), os.getenv("DEFAULT_BIO_MAX_LENGTH"))
             logger.error(os.getenv("DEBUG_DEFAULT_BIO_IS_TOO_LONG") + " - " + default_bio) if os.getenv("DEBUG") == "true" else None
             return
-        messagebox.showinfo(os.getenv("STARTED"), os.getenv("STARTED_MESSAGE"))
-        logger.info(os.getenv("STARTED_MESSAGE")) if os.getenv("DEBUG") == "true" else None
-        root.destroy()
+
+        usernames_str = notification_usernames_entry.get()
+        if usernames_str != os.getenv("NOTIFICATION_USERNAMES_PLACEHOLDER"):
+            notification_usernames = [uname.strip() for uname in usernames_str.replace(',', ' ').split() if uname.strip()]
+            notification_message_text_global_str = notification_message_text.get("1.0", tk.END).strip()
+            game_stats["notification_usernames"] = notification_usernames
+
         try:
-            root.quit()
+            game_stats["default_bio"] = default_bio
+            game_stats["notification_message"] = notification_message_text_global_str
         except:
             pass
+        _save_stats_to_file()
+
+
+        messagebox.showinfo(os.getenv("STARTED"), os.getenv("STARTED_MESSAGE"))
+        logger.info(os.getenv("STARTED_MESSAGE")) if os.getenv("DEBUG") == "true" else None
+        root.iconify()
         logger.info(os.getenv("CONSOLE_START_MESSAGE"))
         start_monitoring(games)
     else:
@@ -650,11 +712,11 @@ def start_button_click():
 def add_game_to_list(process_name, list_window):
     """
     Adds a game to the list of added games.
-    
+
     Args:
         process_name (str): The name of the game to be added.
         list_window (tkinter.Toplevel): The window containing the list of games.
-    
+
     Returns:
         callable: A function that can be called to add the game to the list.
     """
@@ -674,7 +736,7 @@ def add_game_to_list(process_name, list_window):
 def add_placeholder(entry, placeholder):
     """
     Adds a placeholder text to an entry widget and handles focus events to show/hide the placeholder.
-    
+
     Args:
         entry (tkinter.Entry): The entry widget to add the placeholder to.
         placeholder (str): The placeholder text to display.
@@ -715,19 +777,19 @@ def remove_all_games():
 def show_list():
     """
     Displays a list of games in a separate window, allowing the user to search and add games to a list.
-    
+
     The `show_list()` function creates a new window with a list of games, a search field, and buttons to add selected games to a list and close the window.
-    
+
     The list of games is retrieved from the `process_name_mapping` dictionary, which maps game names to their corresponding process names. The list is filtered based on the user's search input, and the matching games are displayed in a listbox.
-    
+
     When the user selects a game from the listbox and presses the "Add" button, the selected game is added to the `added_games` list and displayed in the main application's games listbox.
     """
     def filter_list(event):
         """
         Filters the listbox display based on the search term entered by the user.
-        
+
         This function is called whenever the user types into the search box. It updates the listbox to only display items that match the search term, either in the key (game name) or the process name mapping.
-        
+
         Args:
             event (tkinter.Event): The event object passed to the function by the Tkinter event handler.
         """
@@ -743,7 +805,7 @@ def show_list():
                 display_text = f"{capitalize_first_letters(process_name_mapping[key][0])} :: {key}"
                 listbox.insert(tk.END, display_text)
 
-                
+
     def add_on_double_click(event):
         """
         Adds the double-clicked game from the listbox to the list of added games, and updates the games listbox accordingly.
@@ -800,7 +862,7 @@ def show_list():
 
     listbox = tk.Listbox(list_frame, width=60, height=20, selectmode=tk.SINGLE, cursor="hand2")
     listbox.grid(row=2, column=0, columnspan=2, pady=10)
-    
+
     unique_keys = set()
     sorted_keys = sorted(process_name_mapping.keys())
 
@@ -816,10 +878,10 @@ def show_list():
     def add_to_list(arg=None):
         """
         Adds the selected game from the listbox to the list of added games, and updates the games listbox accordingly.
-        
+
         Args:
             arg (Optional[Any]): Unused argument, required for the Tkinter event handler.
-        
+
         Raises:
             None
         """
@@ -838,7 +900,7 @@ def show_list():
                 logger.info(os.getenv("DEBUG_GAME_ADDED") + " - " + selected_game) if os.getenv("DEBUG") == "true" else None
                 added_games.append(selected_game)
                 games_listbox.insert(tk.END, selected_game)
-                listbox.selection_clear(0, tk.END)  
+                listbox.selection_clear(0, tk.END)
                 filter_list(None)
 
     listbox.bind("<Return>", add_to_list)
@@ -881,12 +943,16 @@ def change_theme():
     toggle_debug_mode(True)
     toggle_hint_mode(True)
 
+    game_stats["theme"] = theme
+    _save_stats_to_file()
+
+
 toast_window = None
 
 def show_toast(message, duration=5000, after=2000):
     """
     Displays a toast notification on the screen for a specified duration.
-    
+
     Args:
         message (str): The message to display in the toast notification.
         duration (int, optional): The duration of the toast notification in milliseconds. Defaults to 5000 (5 seconds).
@@ -900,8 +966,8 @@ def show_toast(message, duration=5000, after=2000):
             pass
 
     toast_window = tk.Toplevel(root)
-    toast_window.overrideredirect(True)  
-    toast_window.geometry("+500+400") 
+    toast_window.overrideredirect(True)
+    toast_window.geometry("+500+400")
 
     bg_color = "white"
     fg_color = "black"
@@ -1021,10 +1087,10 @@ default_bio_text.insert(tk.END, default_bio)
 default_bio_text.grid(row=3, column=1, columnspan=3, padx=5, pady=5)
 
 chthema = tk.Button(frame, text=os.getenv("CHANGE_THEMA_LABEL"), command=change_theme, font=(poppins_font, 12), cursor="hand2")
-chthema.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
+chthema.grid(row=4, column=0, columnspan=1, padx=0, pady=5)
 
 stats_button = tk.Button(frame, text=os.getenv("STATS"), command=show_stats, font=(poppins_font, 12), cursor="hand2")
-stats_button.grid(row=5, column=0, padx=5, pady=5)
+stats_button.grid(row=5, column=0, columnspan=1, padx=0, pady=5)
 
 debug_mode_var = tk.BooleanVar()
 hint_mode_var = tk.BooleanVar()
@@ -1035,6 +1101,29 @@ debug_mode_button.grid(row=4, column=2, columnspan=2, padx=5, pady=5)
 
 hint_mode_button = tk.Checkbutton(frame, text=os.getenv("SHOW_HINTS"), variable=hint_mode_var, command=lambda: toggle_hint_mode(False), font=(poppins_font, 12), cursor="hand2")
 hint_mode_button.grid(row=5, column=2, columnspan=2, padx=5, pady=5)
+
+notification_usernames_label = tk.Label(frame, text=os.getenv("NOTIFICATION_USERNAMES_LABEL"), font=(poppins_font, 12))
+notification_usernames_label.grid(row=6, column=0, sticky="w", padx=5, pady=5)
+
+notification_usernames_entry = tk.Entry(frame, width=50, font=(poppins_font, 12), cursor="xterm")
+notification_usernames_entry.grid(row=6, column=1, columnspan=3, padx=5, pady=5)
+if notification_usernames:
+    notification_usernames_entry.insert(0, ", ".join(notification_usernames)) 
+    notification_usernames_entry.xview_moveto(1)
+else:
+    add_placeholder(notification_usernames_entry, os.getenv("NOTIFICATION_USERNAMES_PLACEHOLDER"))
+
+notification_message_label = tk.Label(frame, text=os.getenv("NOTIFICATION_MESSAGE_LABEL_CUSTOM"), font=(poppins_font, 12))
+notification_message_label.grid(row=7, column=0, sticky="nw", padx=5, pady=5)
+
+notification_message_text = tk.Text(frame, width=50, height=3, font=(poppins_font, 12), cursor="xterm")
+notification_message_text.insert(tk.END, notification_message_text_global_str)
+notification_message_text.grid(row=7, column=1, columnspan=3, padx=5, pady=5)
+notification_message_text_global = notification_message_text
+
+notification_variables_label = tk.Label(frame, text=os.getenv("NOTIFICATION_VARIABLES_LABEL"), font=(poppins_font, 10), justify=tk.LEFT)
+notification_variables_label.grid(row=8, column=1, columnspan=3, sticky="nw", padx=5, pady=0)
+
 
 if theme == 0:
     remove_button.configure(fg="maroon")
@@ -1055,6 +1144,11 @@ if os.getenv("DEBUG") == "true":
 if os.getenv("HINTS") == "true":
     hint_mode_var.set(True)
 
+if "theme" in game_stats:
+    if game_stats["theme"] == 1:
+        change_theme()
+
+
 # HINTS
 def on_enter(hint_message=None):
     if os.getenv("HINTS") == "true":
@@ -1072,6 +1166,10 @@ def on_enter(hint_message=None):
             show_toast(os.getenv("CHANGE_THEMA_HINT"), duration=20000)
         if hint_message == "list_button":
             show_toast(os.getenv("GAME_LIST_HINT"), duration=20000)
+        if hint_message == "notification_usernames_entry":
+            show_toast(os.getenv("NOTIFICATION_USERNAMES_HINT"), duration=20000)
+        if hint_message == "notification_message_text":
+            show_toast(os.getenv("NOTIFICATION_MESSAGE_CUSTOM_HINT"), duration=20000)
 
 def on_leave(event):
     global toast_window
@@ -1096,6 +1194,11 @@ chthema.bind("<Enter>", lambda event: on_enter(hint_message="chthema"))
 chthema.bind("<Leave>", on_leave)
 list_button.bind("<Enter>", lambda event: on_enter(hint_message="list_button"))
 list_button.bind("<Leave>", on_leave)
+notification_usernames_entry.bind("<Enter>", lambda event: on_enter(hint_message="notification_usernames_entry"))
+notification_usernames_entry.bind("<Leave>", on_leave)
+notification_message_text.bind("<Enter>", lambda event: on_enter(hint_message="notification_message_text"))
+notification_message_text.bind("<Leave>", on_leave)
+
 
 emoji_font = tkfont.Font(family="Segoe UI Emoji", size=12)
 emoji_font2 = tkfont.Font(family="Noto Color Emoji", size=12)
