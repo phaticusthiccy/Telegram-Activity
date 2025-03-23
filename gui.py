@@ -702,7 +702,11 @@ def start_button_click():
 
         messagebox.showinfo(os.getenv("STARTED"), os.getenv("STARTED_MESSAGE"))
         logger.info(os.getenv("STARTED_MESSAGE")) if os.getenv("DEBUG") == "true" else None
-        root.iconify()
+        root.destroy()
+        try:
+            root.quit()
+        except:
+            pass
         logger.info(os.getenv("CONSOLE_START_MESSAGE"))
         start_monitoring(games)
     else:
