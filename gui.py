@@ -129,6 +129,7 @@ def log_game_end(game_name):
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds() / 60
         game_stats["daily"][game_name]["total_duration"] += duration
+        game_stats["daily"][game_name]["total_duration"] = game_stats["daily"][game_name]["total_duration"] / 10
         _update_weekly_stats(game_name, duration)
         _save_stats_to_file()
 
@@ -152,6 +153,8 @@ def _update_weekly_stats(game_name, duration):
     if game_name not in game_stats["weekly"][week_number]:
         game_stats["weekly"][week_number][game_name] = 0
     game_stats["weekly"][week_number][game_name] += duration
+    game_stats["weekly"][week_number][game_name] += game_stats["weekly"][week_number][game_name] / 10
+
 
 def _save_stats_to_file():
     """Writes the game_stats dictionary to the file specified by STATS_FILE in JSON format."""
