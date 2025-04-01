@@ -132,3 +132,4 @@ dmypy.json
 *.session
 *.session-journal
 GameMonitor.bat
+*dev.py
