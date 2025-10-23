@@ -97,7 +97,7 @@ ACTION_EMOJI_MORE_120_MIN = os.getenv("ACTION_EMOJI_MORE_120_MIN")
 global latest_version
 global local_version
 STATS_FILE = os.getenv("STATS_FILE")
-game_stats = json.load(open('./game_stats.json'))
+game_stats = json.load(open('./' + STATS_FILE))
 notification_usernames = []
 global playing_game
 playing_game = None
@@ -119,6 +119,13 @@ if "default_bio" in game_stats:
 else:
     game_stats["default_bio"] = os.getenv("DEFAULT_BIO")
     default_bio = os.getenv("DEFAULT_BIO")
+
+if "debugmode" in game_stats:
+    debugmode = True if game_stats["debugmode"] == True else False
+    os.environ["DEBUG"] = "true" if debugmode == True else "false"
+else:
+    game_stats["debugmode"] = False
+    debugmode = False
 
 
 def get_cpu_usage():
@@ -259,7 +266,6 @@ def checkAuth():
 checkAuth()
 logger.info(os.getenv("LOADING_MESSAGE"))
 logger.info(os.getenv("DEBUG_ON")) if os.getenv("DEBUG") == "true" else None
-
 local_version = os.getenv("VERSION")
 logger.info(os.getenv("DEBUG_VERSION") + local_version) if os.getenv("DEBUG") == "true" else None
 
@@ -276,10 +282,14 @@ def toggle_debug_mode(fromTheme):
     if not fromTheme:
         if debug_mode_var.get():
             os.environ["DEBUG"] = "true"
+            game_stats["debugmode"] = True
             logger.info(os.getenv("DEBUG_MODE_ON"))
         else:
             os.environ["DEBUG"] = "false"
+            game_stats["debugmode"] = False
             logger.info(os.getenv("DEBUG_MODE_OFF"))
+
+        _save_stats_to_file()
 
     if theme == 0:
         debug_mode_button.configure(selectcolor="black")
@@ -354,8 +364,9 @@ def capitalize_first_letters(text):
     Returns:
         str: The input text with the first letter of each word capitalized.
     """
+
     words = text.split()
-    capitalized_words = [word.capitalize() for word in words]
+    capitalized_words = [word[0].upper() + word[1:] if word else '' for word in words]
     return ' '.join(capitalized_words)
 
 def show_stats():
@@ -769,6 +780,7 @@ def start_monitoring(games):
     loop.create_task(main(games))
     loop.run_forever()
 
+'''
 def add_game(event=None):
     """
     Adds a new game to the list of added games.
@@ -799,6 +811,7 @@ def add_game(event=None):
     else:
         messagebox.showwarning(os.getenv("WARNING"), os.getenv("VALID_GAME_NAME"))
         logger.debug(os.getenv("DEBUG_VALID_NAME") + " - " + friendly_name) if os.getenv("DEBUG") == "true" else None
+'''
 
 def remove_game(arg=None):
     """
@@ -812,9 +825,10 @@ def remove_game(arg=None):
         games_listbox.delete(selected_game)
         if game_to_remove in added_games:
             added_games.remove(game_to_remove)
+            show_toast(os.getenv("GAME_DELETED"), duration=1000, is_hint=False)
             logger.info(os.getenv("DEBUG_GAME_REMOVED") + " - " + game_to_remove) if os.getenv("DEBUG") == "true" else None
     else:
-        messagebox.showwarning(os.getenv("WARNING"), os.getenv("SELECT_GAME_TO_DEL"))
+        show_toast(os.getenv("SELECT_GAME_TO_DEL"), duration=1000, is_hint=False)
         logger.debug(os.getenv("DEBUG_DELETE_GAME")) if os.getenv("DEBUG") == "true" else None
 
 def start_button_click():
@@ -920,12 +934,12 @@ def remove_all_games():
     If there are no games in the list, it shows a toast message.
     """
     if not games_listbox.size():
-        show_toast(os.getenv("NO_GAMES_TO_REMOVE"))
+        show_toast(os.getenv("NO_GAMES_TO_REMOVE"), duration=1000, is_hint=False)
         logger.debug(os.getenv("DEBUG_NO_GAMES_TO_REMOVE")) if os.getenv("DEBUG") == "true" else None
     else:
         games_listbox.delete(0, tk.END)
         added_games.clear()
-        show_toast(os.getenv("DEBUG_ALL_GAMES_REMOVED"))
+        show_toast(os.getenv("DEBUG_ALL_GAMES_REMOVED"), duration=1000, is_hint=False)
         logger.info(os.getenv("DEBUG_ALL_GAMES_REMOVED")) if os.getenv("DEBUG") == "true" else None
 
 def show_list():
@@ -1084,7 +1098,7 @@ def change_theme():
         start_button.configure(fg="SteelBlue1")
         sv_ttk.set_theme("light")
         logger.debug(os.getenv("DEBUG_CHANGE_THEMA_LIGHT_MODE")) if os.getenv("DEBUG") == "true" else None
-        show_toast(os.getenv("CHANGE_THEMA_LIGHT_MODE"))
+        show_toast(os.getenv("CHANGE_THEMA_LIGHT_MODE"), is_hint=False)
     else:
         theme = 0
         remove_button.configure(fg="hot pink")
@@ -1092,7 +1106,7 @@ def change_theme():
         start_button.configure(fg="DeepSkyBlue2")
         sv_ttk.set_theme("dark")
         logger.debug(os.getenv("DEBUG_CHANGE_THEMA_DARK_MODE")) if os.getenv("DEBUG") == "true" else None
-        show_toast(os.getenv("CHANGE_THEMA_DARK_MODE"))
+        show_toast(os.getenv("CHANGE_THEMA_DARK_MODE"), is_hint=False)
 
     toggle_debug_mode(True)
     toggle_hint_mode(True)
@@ -1102,7 +1116,7 @@ def change_theme():
 
 toast_window = None
 
-def show_toast(message, duration=5000, after=2000):
+def show_toast(message, duration=5000, after=1400, fps = 60, is_hint=False):
     """
     Displays a toast notification on the screen for a specified duration.
 
@@ -1122,6 +1136,8 @@ def show_toast(message, duration=5000, after=2000):
     toast_window.overrideredirect(True)
     toast_window.geometry("+500+400")
 
+    toast_window.is_hint_toast = is_hint
+
     bg_color = "white"
     fg_color = "black"
     if (theme == 1):
@@ -1130,17 +1146,17 @@ def show_toast(message, duration=5000, after=2000):
     toast_label = tk.Label(toast_window, text=message, bg=bg_color, fg=fg_color, padx=20, pady=10)
     toast_label.pack()
 
-    def start_fade(window, remaining_time):
+    def start_fade(window, remaining_time, fps2 = fps):
         if remaining_time > 0:
             alpha = remaining_time / duration
             window.attributes("-alpha", alpha)
-            window.after(50, start_fade, window, remaining_time - 50)
+            window.after(int(1000 / fps2), start_fade, window, remaining_time - (int(1000 / fps2)))
         else:
             window.destroy()
 
 
     try:
-        toast_window.after(after, start_fade, toast_window, duration - 4800)
+        toast_window.after(after, start_fade, toast_window, duration)
     except:
         pass
 
@@ -1182,6 +1198,7 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(print_me())
 
 root = tk.Tk()
+root.protocol("WM_DELETE_WINDOW", lambda: handle_exit(None, None))
 root.title(f"{os.getenv('APP_TITLE')} v{local_version}")
 icon_image = Image.open(str(app_icon))
 icon_image = icon_image.convert('RGBA')
@@ -1206,18 +1223,18 @@ frame.pack(padx=40, pady=0)
 frame = tk.Frame(root)
 frame.pack(padx=40, pady=40)
 
-label = tk.Label(frame, text=os.getenv("ADD_GAME"), font=(poppins_font, 12))
-label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
+#label = tk.Label(frame, text=os.getenv("ADD_GAME"), font=(poppins_font, 12))
+#label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
 
-game_entry = tk.Entry(frame, width=30, font=(poppins_font, 12), cursor="xterm")
-game_entry.grid(row=0, column=1, padx=5, pady=5)
-game_entry.bind("<Return>", add_game)
+#game_entry = tk.Entry(frame, width=30, font=(poppins_font, 12), cursor="xterm")
+#game_entry.grid(row=0, column=1, padx=5, pady=5)
+#game_entry.bind("<Return>", add_game)
 
-add_button = tk.Button(frame, text=os.getenv("ADD_GAME_BUTTON"), command=add_game, font=(poppins_font, 12), cursor="hand2")
-add_button.grid(row=0, column=2, padx=5, pady=5)
+#add_button = tk.Button(frame, text=os.getenv("ADD_GAME_BUTTON"), command=add_game, font=(poppins_font, 12), cursor="hand2")
+#add_button.grid(row=0, column=2, padx=5, pady=5)
 
 list_button = tk.Button(frame, text=os.getenv("LIST_OF_GAMES"), command=show_list, font=(poppins_font, 12), cursor="hand2")
-list_button.grid(row=0, column=3, padx=5, pady=5)
+list_button.grid(row=0, column=1, padx=5, pady=5)
 
 games_listbox = tk.Listbox(frame, selectmode=tk.SINGLE, width=50, font=(poppins_font, 12))
 games_listbox.grid(row=1, column=0, columnspan=4, padx=5, pady=5)
@@ -1250,7 +1267,7 @@ hint_mode_var = tk.BooleanVar()
 
 debug_mode_button = tk.Checkbutton(frame, text=os.getenv("DEBUG_MODE_LABEL"), variable=debug_mode_var, command=lambda: toggle_debug_mode(False), font=(poppins_font, 12), cursor="hand2")
 debug_mode_button.grid(row=4, column=2, columnspan=2, padx=5, pady=5)
-
+debug_mode_button.select() if debugmode == True else debug_mode_button.deselect()
 
 hint_mode_button = tk.Checkbutton(frame, text=os.getenv("SHOW_HINTS"), variable=hint_mode_var, command=lambda: toggle_hint_mode(False), font=(poppins_font, 12), cursor="hand2")
 hint_mode_button.grid(row=5, column=2, columnspan=2, padx=5, pady=5)
@@ -1306,32 +1323,33 @@ if "theme" in game_stats:
 def on_enter(hint_message=None):
     if os.getenv("HINTS") == "true":
         if hint_message == "default_bio_text":
-            show_toast(os.getenv("DEFAULT_BIO_HINT"), duration=7000)
+            show_toast(os.getenv("DEFAULT_BIO_HINT"), duration=7000, is_hint=True)
         if hint_message == "debug_mode_button":
-            show_toast(os.getenv("DEBUG_MODE_HINT"), duration=7000)
+            show_toast(os.getenv("DEBUG_MODE_HINT"), duration=7000, is_hint=True)
         if hint_message == "remove_button":
-            show_toast(os.getenv("REMOVE_HINT"), duration=7000)
+            show_toast(os.getenv("REMOVE_HINT"), duration=7000, is_hint=True)
         if hint_message == "remove_all_button":
-            show_toast(os.getenv("REMOVE_ALL_HINT"), duration=7000)
+            show_toast(os.getenv("REMOVE_ALL_HINT"), duration=7000, is_hint=True)
         if hint_message == "start_button":
-            show_toast(os.getenv("START_HINT"), duration=7000)
+            show_toast(os.getenv("START_HINT"), duration=7000, is_hint=True)
         if hint_message == "chthema":
-            show_toast(os.getenv("CHANGE_THEMA_HINT"), duration=7000)
+            show_toast(os.getenv("CHANGE_THEMA_HINT"), duration=7000, is_hint=True)
         if hint_message == "list_button":
-            show_toast(os.getenv("GAME_LIST_HINT"), duration=7000)
+            show_toast(os.getenv("GAME_LIST_HINT"), duration=7000, is_hint=True)
         if hint_message == "notification_usernames_entry":
-            show_toast(os.getenv("NOTIFICATION_USERNAMES_HINT"), duration=7000)
+            show_toast(os.getenv("NOTIFICATION_USERNAMES_HINT"), duration=7000, is_hint=True)
         if hint_message == "notification_message_text":
-            show_toast(os.getenv("NOTIFICATION_MESSAGE_CUSTOM_HINT"), duration=7000)
+            show_toast(os.getenv("NOTIFICATION_MESSAGE_CUSTOM_HINT"), duration=7000, is_hint=True)
 
 def on_leave(event):
     global toast_window
     if toast_window is not None:
-        try:
-            toast_window.destroy()
-        except:
-            pass
-    toast_window = None
+        if getattr(toast_window, 'is_hint_toast', False):
+            try:
+                toast_window.destroy()
+            except:
+                pass
+            toast_window = None
 
 default_bio_text.bind("<Enter>", lambda event: on_enter(hint_message="default_bio_text"))
 default_bio_text.bind("<Leave>", on_leave)

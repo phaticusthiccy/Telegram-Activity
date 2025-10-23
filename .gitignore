@@ -134,3 +134,4 @@ dmypy.json
 GameMonitor.bat
 *dev.py
 .env
+debug.json
