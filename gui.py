@@ -178,7 +178,6 @@ def log_game_end(game_name):
         game_stats["daily"][game_name]["total_duration"] = game_stats["daily"][game_name]["total_duration"] / 10
         _save_stats_to_file()
 
-
 def _save_stats_to_file():
     """Writes the game_stats dictionary to the file specified by STATS_FILE in JSON format."""
     with open(STATS_FILE, 'w') as f:
@@ -200,7 +199,6 @@ async def get_first_name(username):
     except Exception as e:
         logger.warning(f"Could not get first name for {username}: {e}")
         return False
-
 
 def get_latest_version():
     """
@@ -535,8 +533,6 @@ def _generate_report(time_frame):
 
     plt.show()
 
-
-
 def find_process_name(name):
     """
     Finds the process name that matches the given name.
@@ -761,7 +757,6 @@ async def main(games):
         except:
             pass
         await asyncio.sleep(check_interval)
-
 
 def start_monitoring(games):
     """
@@ -1075,8 +1070,8 @@ def show_list():
 
     list_window.resizable(False, False)
 
-
 theme = 0
+
 def change_theme():
     """
     Changes the theme of the application between light and dark mode.
@@ -1104,7 +1099,6 @@ def change_theme():
 
     game_stats["theme"] = theme
     _save_stats_to_file()
-
 
 toast_window = None
 
@@ -1312,23 +1306,23 @@ if "theme" in game_stats:
 def on_enter(hint_message=None):
     if os.getenv("HINTS") == "true":
         if hint_message == "default_bio_text":
-            show_toast(os.getenv("DEFAULT_BIO_HINT"), duration=20000)
+            show_toast(os.getenv("DEFAULT_BIO_HINT"), duration=7000)
         if hint_message == "debug_mode_button":
-            show_toast(os.getenv("DEBUG_MODE_HINT"), duration=20000)
+            show_toast(os.getenv("DEBUG_MODE_HINT"), duration=7000)
         if hint_message == "remove_button":
-            show_toast(os.getenv("REMOVE_HINT"), duration=20000)
+            show_toast(os.getenv("REMOVE_HINT"), duration=7000)
         if hint_message == "remove_all_button":
-            show_toast(os.getenv("REMOVE_ALL_HINT"), duration=20000)
+            show_toast(os.getenv("REMOVE_ALL_HINT"), duration=7000)
         if hint_message == "start_button":
-            show_toast(os.getenv("START_HINT"), duration=20000)
+            show_toast(os.getenv("START_HINT"), duration=7000)
         if hint_message == "chthema":
-            show_toast(os.getenv("CHANGE_THEMA_HINT"), duration=20000)
+            show_toast(os.getenv("CHANGE_THEMA_HINT"), duration=7000)
         if hint_message == "list_button":
-            show_toast(os.getenv("GAME_LIST_HINT"), duration=20000)
+            show_toast(os.getenv("GAME_LIST_HINT"), duration=7000)
         if hint_message == "notification_usernames_entry":
-            show_toast(os.getenv("NOTIFICATION_USERNAMES_HINT"), duration=20000)
+            show_toast(os.getenv("NOTIFICATION_USERNAMES_HINT"), duration=7000)
         if hint_message == "notification_message_text":
-            show_toast(os.getenv("NOTIFICATION_MESSAGE_CUSTOM_HINT"), duration=20000)
+            show_toast(os.getenv("NOTIFICATION_MESSAGE_CUSTOM_HINT"), duration=7000)
 
 def on_leave(event):
     global toast_window
