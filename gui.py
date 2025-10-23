@@ -608,6 +608,7 @@ async def update_status(game_name, elapsed_time, games):
     global notification_usernames
     global playing_game
     global notification_message_text_global
+    global notification_message_text_global_str
 
     if game_name:
         log_game_start(game_name)
@@ -689,7 +690,14 @@ async def update_status(game_name, elapsed_time, games):
             await client(UpdateProfileRequest(about=new_status))
             if playing_game != friendly_game_name_cap:
                 if notification_usernames:
-                    notification_message_template = notification_message_text_global.get("1.0", tk.END).strip()
+                    try:
+                        if notification_message_text_global is not None and notification_message_text_global.winfo_exists():
+                            notification_message_template = notification_message_text_global.get("1.0", tk.END).strip()
+                        else:
+                            notification_message_template = notification_message_text_global_str
+                    except Exception:
+                        notification_message_template = notification_message_text_global_str
+
                     if not notification_message_template:
                         notification_message_template = os.getenv("NOTIFICATION_MESSAGE")
 
@@ -712,6 +720,8 @@ async def update_status(game_name, elapsed_time, games):
             playing_game = friendly_game_name_cap
             logger.info(os.getenv("DEBUG_PLAYING") + friendly_game_name_cap + os.getenv("DEBUG_PLAYTIME") + str(elapsed_time + 1)) if os.getenv("DEBUG") == "true" else None
         except Exception as e:
+            print(e)
+            return
             messagebox.showerror(os.getenv("ERROR"), os.getenv("TOO_LONG"))
             logger.warning(os.getenv("TOO_LONG")) if os.getenv("DEBUG") == "true" else None
             logger.critical(e) if os.getenv("DEBUG") == "true" else None
