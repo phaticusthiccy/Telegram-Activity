@@ -1,43 +1,31 @@
 """
 Author: Phaticusthiccy
 
-This Python script is a graphical user interface (GUI) application built using the Tkinter library. The application allows users to monitor and display their activity status on the Telegram messaging platform based on the games they are currently playing.
+This script is a graphical user interface (GUI) application built with Tkinter. It allows users to monitor their gaming activity and update their Telegram status accordingly.
 
-The main features of the application include:
+Key Features:
+1. Add and manage a list of games to monitor.
+2. Display a searchable list of available games.
+3. Set a default biography message for Telegram.
+4. Automatically update Telegram status with the current game and elapsed time.
+5. Notify specified Telegram users when a game starts.
+6. Toggle between light and dark themes.
+7. View game statistics and usage reports.
 
-1. Adding and removing games to a list of monitored games.
-2. Displaying a list of available games to choose from.
-3. Setting a default biography message.
-4. Updating the user's Telegram status with the current game being played and the elapsed time.
-5. Displaying notifications and error messages.
-6. Changing the application theme between light and dark mode.
-7. Sending Telegram notifications to specified users when a game starts.
+Core Components:
+- **Game Management**: Add, remove, and view games in a monitored list.
+- **Telegram Integration**: Update status and send notifications using the Telethon library.
+- **Process Monitoring**: Detect running games using the psutil library.
+- **Customizable Settings**: Configure default biography, notification messages, and themes.
+- **Statistics**: Generate reports on game activity and resource usage.
 
-The application uses the Telethon library to interact with the Telegram API and update the user's status. It also utilizes the psutil library to monitor running processes and detect the games being played.
+Setup Instructions:
+1. Configure your Telegram API credentials and other settings in the `.env` file.
+2. Run the script to launch the application.
+3. Add games to monitor, set a biography, and specify notification recipients.
+4. Start monitoring to update your Telegram status in real-time.
 
-The application loads a mapping of game names to their corresponding process names from a JSON file. This mapping is used to identify the games being played based on the running processes.
-
-The main components of the GUI include:
-
-- A welcome label displaying the user's first name.
-- An entry field and button for adding games to the monitored list.
-- A listbox displaying the added games.
-- Buttons for removing games from the list, displaying a list of available games, and starting the monitoring process.
-- A text area for setting the default biography message.
-- A button for changing the application theme.
-- An entry field for specifying Telegram usernames to notify.
-
-The application also includes logging functionality to log debug messages, errors, and other information to the console and a log file.
-
-Usage:
-1. Enter your Telegram API credentials and other required configuration values in the `.env` file.
-2. Run the script to launch the GUI application.
-3. Add the games you want to monitor to the list.
-4. Set the default biography message.
-5. Enter Telegram usernames to notify (optional).
-6. Click the "Start" button to begin monitoring and updating your Telegram status.
-
-Note: This application requires a Telegram account and API credentials to function correctly.
+Note: A Telegram account and API credentials are required for this application to function.
 """
 
 
@@ -97,7 +85,7 @@ ACTION_EMOJI_MORE_120_MIN = os.getenv("ACTION_EMOJI_MORE_120_MIN")
 global latest_version
 global local_version
 STATS_FILE = os.getenv("STATS_FILE")
-game_stats = json.load(open('./game_stats.json'))
+game_stats = json.load(open('./' + STATS_FILE))
 notification_usernames = []
 global playing_game
 playing_game = None
@@ -119,6 +107,13 @@ if "default_bio" in game_stats:
 else:
     game_stats["default_bio"] = os.getenv("DEFAULT_BIO")
     default_bio = os.getenv("DEFAULT_BIO")
+
+if "debugmode" in game_stats:
+    debugmode = True if game_stats["debugmode"] == True else False
+    os.environ["DEBUG"] = "true" if debugmode == True else "false"
+else:
+    game_stats["debugmode"] = False
+    debugmode = False
 
 
 def get_cpu_usage():
@@ -152,10 +147,13 @@ def log_game_start(game_name):
     Notes:
         The start time is recorded in ISO format using datetime.now().isoformat().
         If the game is not already in the daily stats dictionary, a new entry is created with a start time and total duration of 0.
+        The start_time is updated every time the game starts.
     """
     current_time = datetime.now().isoformat()
     if game_name not in game_stats["daily"]:
-        game_stats["daily"][game_name] = {"start_time": current_time, "total_duration": 1}
+        game_stats["daily"][game_name] = {"start_time": current_time, "total_duration": 0}
+    else:
+        game_stats["daily"][game_name]["start_time"] = current_time
 
 def log_game_end(game_name):
     """
@@ -175,9 +173,7 @@ def log_game_end(game_name):
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds() / 60
         game_stats["daily"][game_name]["total_duration"] += duration
-        game_stats["daily"][game_name]["total_duration"] = game_stats["daily"][game_name]["total_duration"] / 10
         _save_stats_to_file()
-
 
 def _save_stats_to_file():
     """Writes the game_stats dictionary to the file specified by STATS_FILE in JSON format."""
@@ -201,8 +197,7 @@ async def get_first_name(username):
         logger.warning(f"Could not get first name for {username}: {e}")
         return False
 
-
-def get_latest_version():
+def get_latest_version(language="en"):
     """
     Retrieves the latest version information from a remote source.
 
@@ -210,7 +205,8 @@ def get_latest_version():
         dict: A dictionary containing the latest version and update message, or None if an error occurred.
     """
     try:
-        response = requests.get("https://raw.githubusercontent.com/phaticusthiccy/Telegram-Activity/master/sample.env")
+        changeLogURL = "https://raw.githubusercontent.com/phaticusthiccy/Telegram-Activity/master/sample.tr.env" if language == "tr" else "https://raw.githubusercontent.com/phaticusthiccy/Telegram-Activity/master/sample.env"
+        response = requests.get(changeLogURL)
         response.raise_for_status()
         message_payload = {
             "version": "",
@@ -220,7 +216,7 @@ def get_latest_version():
             if line.startswith("VERSION="):
                 message_payload["version"] = line.split("=")[1].strip('"')
             if line.startswith("UPDATE_MESSAGE="):
-                message_payload["message"] = line.split("=")[1].strip('"')
+                message_payload["message"] = (line.split("=")[1].strip('"')).replace("&", "\n")
         return message_payload
     except requests.exceptions.RequestException as e:
         logger.error(f"Error retrieving latest version: {e}")
@@ -261,7 +257,6 @@ def checkAuth():
 checkAuth()
 logger.info(os.getenv("LOADING_MESSAGE"))
 logger.info(os.getenv("DEBUG_ON")) if os.getenv("DEBUG") == "true" else None
-
 local_version = os.getenv("VERSION")
 logger.info(os.getenv("DEBUG_VERSION") + local_version) if os.getenv("DEBUG") == "true" else None
 
@@ -278,10 +273,14 @@ def toggle_debug_mode(fromTheme):
     if not fromTheme:
         if debug_mode_var.get():
             os.environ["DEBUG"] = "true"
+            game_stats["debugmode"] = True
             logger.info(os.getenv("DEBUG_MODE_ON"))
         else:
             os.environ["DEBUG"] = "false"
+            game_stats["debugmode"] = False
             logger.info(os.getenv("DEBUG_MODE_OFF"))
+
+        _save_stats_to_file()
 
     if theme == 0:
         debug_mode_button.configure(selectcolor="black")
@@ -292,6 +291,16 @@ def toggle_debug_mode(fromTheme):
     return
 
 def toggle_hint_mode(fromTheme):
+    """
+    Toggles the hint mode for the application.
+
+    Args:
+        fromTheme (bool): Indicates whether the toggle was triggered from a theme change.
+
+    Returns:
+        None
+    """
+
     if not fromTheme:
         if hint_mode_var.get():
             os.environ["HINTS"] = "true"
@@ -314,7 +323,7 @@ def is_supported_os():
     Returns:
         str: The current system platform as a lowercase string.
     """
-    system = platform.system().lower()
+    system = platform.system() + " " + platform.release()
     logger.info(os.getenv("DEBUG_SYSTEM") + system) if os.getenv("DEBUG") == "true" else None
     return system
 
@@ -356,40 +365,90 @@ def capitalize_first_letters(text):
     Returns:
         str: The input text with the first letter of each word capitalized.
     """
+
     words = text.split()
-    capitalized_words = [word.capitalize() for word in words]
+    capitalized_words = [word[0].upper() + word[1:] if word else '' for word in words]
     return ' '.join(capitalized_words)
 
 def show_stats():
     """
-    Creates a new window to show game statistics.
-    """
-    stats_window = tk.Toplevel(root)
-    stats_window.title(os.getenv("STATS_TITLE"))
-
-    time_frame = tk.StringVar(value="daily")
-    tk.Radiobutton(stats_window, text=os.getenv("DAILY"), variable=time_frame, value="daily", selectcolor="gray").pack()
-
-    tk.Button(stats_window, text=os.getenv("GENERATE_REPORT"), command=lambda: _generate_report(time_frame.get())).pack()
-
-def _generate_report(time_frame):
-    """
-    Generates a bar chart with the total durations of each game in the given time frame.
+    Displays a window containing statistics about the user's gaming activity.
 
     Args:
-        time_frame (str): The time frame to generate the report for, either "daily" or "weekly".
+        None
 
     Returns:
         None
     """
+    stats_window = tk.Toplevel(root)
+    stats_window.withdraw()
+    stats_window.title(os.getenv("STATS_TITLE"))
+
+    root.update_idletasks()
+    root_x = root.winfo_x()
+    root_y = root.winfo_y()
+    root_width = root.winfo_width()
+    root_height = root.winfo_height()
+
+    stats_window_width = 350
+    stats_window_height = 200
+
+    x = root_x + (root_width // 2) - (stats_window_width // 2)
+    y = root_y + (root_height // 2) - (stats_window_height // 2)
+
+    stats_window.geometry(f"{stats_window_width}x{stats_window_height}+{x}+{y}")
+    stats_window.resizable(False, False)
+
+    def lock_position(event):
+        stats_window.geometry(f"{stats_window_width}x{stats_window_height}+{x}+{y}")
+
+    stats_window.bind('<Configure>', lock_position)
+
+    if theme == 0:
+        bg_color = "#2b2b2b"
+        fg_color = "white"
+        select_color = "white"
+    else:
+        bg_color = "#f0f0f0"
+        fg_color = "black"
+        select_color = "black"
+
+    stats_window.configure(bg=bg_color)
+
+    title_label = tk.Label(stats_window, text=os.getenv("STATS_TITLE"), font=(poppins_font, 16, "bold"), bg=bg_color, fg=fg_color)
+    title_label.pack(pady=(20, 10))
+
+    content_frame = tk.Frame(stats_window, bg=bg_color)
+    content_frame.pack(pady=10)
+
+    generate_button = tk.Button(content_frame, text=os.getenv("GENERATE_REPORT"), command=lambda: _generate_report(stats_window), font=(poppins_font, 12), bg="#4CAF50", fg="white", relief="raised", cursor="hand2")
+    generate_button.pack(pady=(10, 0))
+
+    stats_window.deiconify()
+
+def _generate_report(oldWindow=None):
+    """
+    Destroys the old statistics window and creates a new one with the current daily game activity data.
+
+    Args:
+        oldWindow (tkinter.Toplevel): The old statistics window to be destroyed.
+
+    Returns:
+        None
+    """
+    oldWindow.destroy()
+
+    import matplotlib
+    matplotlib.use('TkAgg')
     import matplotlib.pyplot as plt
     import numpy as np
     from matplotlib.patches import ConnectionPatch
     from matplotlib.widgets import Button
 
-    data = game_stats["daily"] 
+    data = game_stats["daily"]
 
     labels = list(data.keys())
+    labelsNames = [unedited_process_name_mapping[data][0] for data in labels]
     total_durations = [v['total_duration'] for v in data.values()]
     sum_total = sum(total_durations)
     overall_ratios = [dur / sum_total for dur in total_durations]
@@ -398,144 +457,192 @@ def _generate_report(time_frame):
     ax1 = fig.add_axes([0.3, 0.1, 0.35, 0.8])
     ax2 = fig.add_axes([0.7, 0.1, 0.25, 0.8])
 
-    def draw_plots(selected_label):
+    wedges = None
+    current_hovered = None
+
+    def draw_plots(selected_label, hovered=None):
+        nonlocal wedges, current_hovered
         idx = labels.index(selected_label)
         explode = [0] * len(labels)
         explode[idx] = 0.1
+        if hovered is not None:
+            explode[hovered] = 0.2
+            
         ax1.clear()
         ax2.clear()
 
-        angle = -180 * overall_ratios[idx]
-        wedges, texts, autotexts = ax1.pie(overall_ratios, autopct='%1.1f%%',
-                                        startangle=angle, labels=labels,
+        ratios = overall_ratios
+
+        wedges, texts, autotexts = ax1.pie(ratios, autopct='%1.1f%%',
+                                        startangle=0, labels=labelsNames,
                                         explode=explode, textprops={'fontsize': 8})
-        
+        for wedge in wedges:
+            wedge.set_picker(True)
+        if hovered is not None:
+            wedges[hovered].set_linewidth(3)
+            wedges[hovered].set_edgecolor('black')
+
         game_data = data[selected_label]
         played_time = game_data['total_duration']
-        ax1.text(0, -1.5, f'{os.getenv("PLAYED_TIME")} {played_time:.2f} {os.getenv("DURATION")}', 
+        ax1.text(0, -1.5, f'{os.getenv("PLAYED_TIME")} {played_time:.2f} {os.getenv("DURATION")}',
                 ha='center', fontsize=10, bbox=dict(facecolor='white', alpha=0.5))
-        
+
         wedge = wedges[idx]
         theta1, theta2 = wedge.theta1, wedge.theta2
         center, r = wedge.center, wedge.r
-        
+
         game_data = data[selected_label]
-        cpu = game_data['avgCPUusage'] / 100
-        gpu = game_data['avgGPUusage'] / 100
+        cpu = game_data.get('avgCPUusage', 0) / 100
+        gpu = game_data.get('avgGPUusage', 0) / 100
         age_ratios = [cpu, gpu]
         age_labels = ['CPU', 'GPU']
-        
+
         bottom = 1
         width = 0.2
         colors = ['#1f77b4', '#ff7f0e']
-        
-        for j, (height, label) in enumerate(reversed(list(zip(age_ratios, age_labels)))): 
+
+        for j, (height, label) in enumerate(reversed(list(zip(age_ratios, age_labels)))):
             bottom -= height
             bars = ax2.bar(0, height, width, bottom=bottom, color=colors[j],
                         label=label, alpha=0.7)
             ax2.bar_label(bars, labels=[f"{height*100:.0f}%"],
                         label_type='center', color='white')
-        
-        
+
+
         ax2.set_title(f'{os.getenv("COMPUTE_USAGE")} ({selected_label})', pad=20)
         ax2.legend(loc='upper right')
         ax2.axis('off')
         ax2.set_xlim(-2.5 * width, 2.5 * width)
-        
+
         bar_top = 1.0
         bar_bottom = 1.0 - sum(age_ratios)
-        
-        x_top = r * np.cos(np.pi / 180 * theta2) + center[0]
-        y_top = r * np.sin(np.pi / 180 * theta2) + center[1]
-        con_top = ConnectionPatch(xyA=(-width/2, bar_top), coordsA=ax2.transData,
-                                xyB=(x_top, y_top), coordsB=ax1.transData, color='gray')
-        ax2.add_artist(con_top)
-        
-        x_bot = r * np.cos(np.pi / 180 * theta1) + center[0]
-        y_bot = r * np.sin(np.pi / 180 * theta1) + center[1]
-        con_bot = ConnectionPatch(xyA=(-width/2, bar_bottom), coordsA=ax2.transData,
-                                xyB=(x_bot, y_bot), coordsB=ax1.transData, color='gray')
-        ax2.add_artist(con_bot)
-        
+
         fig.canvas.draw_idle()
+
+    def on_pick(event):
+        if event.mouseevent.button == 1:
+            artist = event.artist
+            if wedges and artist in wedges:
+                idx = wedges.index(artist)
+                selected_label = labels[idx]
+                global current_selection
+                current_selection = selected_label
+                print(selected_label)
+                hoveredLabel = labels.index(selected_label)
+                draw_plots(selected_label, hovered=hoveredLabel)
+
+    def on_motion(event):
+        nonlocal current_hovered
+        if wedges:
+            for i, wedge in enumerate(wedges):
+                if wedge.contains(event)[0]:
+                    if current_hovered != i:
+                        current_hovered = i
+                        draw_plots(labels[i], hovered=i)
+                    return
+
+    fig.canvas.mpl_connect('pick_event', on_pick)
+    fig.canvas.mpl_connect('motion_notify_event', on_motion)
 
     try:
         current_selection = labels[0]
     except:
         messagebox.showinfo("Error", os.getenv("NO_GAME_DATA"))
         return
-        
+
     draw_plots(current_selection)
 
-    menu_start_pos = [-0.25, 0.1, 0.2, 0.8]
-    menu_end_pos = [0.05, 0.1, 0.2, 0.8]
-
-    menu_ax = fig.add_axes(menu_start_pos)
-    menu_ax.set_xlim(0, 1)
-    menu_ax.set_ylim(0, 1)
-    menu_ax.set_clip_on(True)
-    menu_ax.axis('off')
-    menu_texts = []
-
-    n = len(labels)
-    for i, lab in enumerate(labels):
-        y = 0.9 - i * (0.8 / n)
-        txt = menu_ax.text(0.1, y, lab, fontsize=12, picker=True,
-                        bbox=dict(boxstyle="round", fc="white", ec="black"))
-        txt.set_clip_on(True)
-        menu_texts.append(txt)
-
-    global menu_visible
-    menu_visible = False
-
-    def slide_menu(show=True):
-        start = menu_start_pos[0] if show else menu_end_pos[0]
-        end = menu_end_pos[0] if show else menu_start_pos[0]
-        steps = 20
-        delta = (end - start) / steps
-        for i in range(steps):
-            new_x = start + delta * (i + 1)
-            pos = [new_x, menu_end_pos[1], menu_end_pos[2], menu_end_pos[3]]
-            menu_ax.set_position(pos)
-            fig.canvas.draw_idle()
-            plt.pause(0.01)
-
-    def on_menu_click(event):
-        global current_selection, menu_visible
-        if menu_visible and event.inaxes != menu_ax:
-            slide_menu(show=False)
-            menu_visible = False
-
-    def on_menu_pick(event):
-        global current_selection, menu_visible
-        artist = event.artist
-        if artist in menu_texts:
-            selected = artist.get_text()
-            current_selection = selected
-            draw_plots(selected)
-            slide_menu(show=False)
-            menu_visible = False
-
-    fig.canvas.mpl_connect('pick_event', on_menu_pick)
-    fig.canvas.mpl_connect('button_press_event', on_menu_click)
-
     ax_button = fig.add_axes([0.01, 0.9, 0.1, 0.05])
-    menu_button = Button(ax_button, 'Menu')
+    menu_button = Button(ax_button, os.getenv("MENU"))
 
     def toggle_menu(event):
-        global menu_visible
-        if not menu_visible:
-            slide_menu(show=True)
-            menu_visible = True
-        else:
-            slide_menu(show=False)
-            menu_visible = False
+        show_game_selection_window()
 
     menu_button.on_clicked(toggle_menu)
 
+    def show_game_selection_window():
+        import tkinter as tk
+        from tkinter import ttk
+
+        selection_window = tk.Toplevel()
+        selection_window.title(os.getenv("SELECT_GAME"))
+        selection_window.geometry("600x500")
+        selection_window.resizable(False, False)
+
+        fig_window = fig.canvas.manager.window
+        
+        selection_window.update_idletasks()
+        fig_x = fig_window.winfo_x()
+        fig_y = fig_window.winfo_y()
+        fig_width = fig_window.winfo_width()
+        fig_height = fig_window.winfo_height()
+        window_width = selection_window.winfo_reqwidth() + 100
+        window_height = selection_window.winfo_reqheight()
+        x = fig_x + (fig_width - window_width) // 2
+        y = fig_y + (fig_height - window_height) // 2
+        selection_window.geometry(f"+{x}+{y}")
+
+        def lock_position(event):
+            selection_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+        selection_window.bind('<Configure>', lock_position)
+
+        search_var = tk.StringVar()
+        search_entry = ttk.Entry(selection_window, textvariable=search_var, width=200)
+        search_entry.pack(pady=10, padx=10, fill=tk.X)
+
+        frame = ttk.Frame(selection_window)
+        frame.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
+
+        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL)
+        listbox = tk.Listbox(frame, yscrollcommand=scrollbar.set, cursor="hand2", selectmode=tk.SINGLE, width=200, height=25)
+        scrollbar.config(command=listbox.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        for lab in labelsNames:
+            listbox.insert(tk.END, lab)
+
+        def filter_list(*args):
+            search_term = search_var.get().lower()
+            listbox.delete(0, tk.END)
+            for lab in labelsNames:
+                if search_term in lab.lower():
+                    listbox.insert(tk.END, lab)
+
+        search_var.trace_add("write", filter_list)
+
+        def on_select(event):
+            selection = listbox.curselection()
+            if selection:
+                selected_game = listbox.get(selection[0])
+                try:
+                    idx = labelsNames.index(selected_game)
+                    selected_key = labels[idx]
+                    global current_selection
+                    current_selection = selected_key
+                    draw_plots(selected_key)
+                except ValueError:
+                    pass
+                selection_window.destroy()
+
+        listbox.bind('<Double-1>', on_select)
+        listbox.bind('<Return>', on_select)
+
+        ok_button = ttk.Button(selection_window, text="Select", command=lambda: on_select(None))
+        ok_button.pack(pady=10)
+
+    try:
+        fig_width = 1200
+        fig_height = 600
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        x = (screen_width - fig_width) // 2
+        y = (screen_height - fig_height) // 2
+        fig.canvas.manager.window.geometry(f"{fig_width}x{fig_height}+{x}+{y}")
+    except:
+        pass
     plt.show()
-
-
 
 def find_process_name(name):
     """
@@ -590,23 +697,29 @@ def is_any_game_running(game_names):
         str or None: The name of the first game found to be running, or None if no games are running.
     """
     running_processes = [proc.info['name'].lower() for proc in psutil.process_iter(['name'])]
+    # Looping through games to see if any are running. (It's like playing hide and seek with processes, but less fun)
     for game_name in game_names:
         if any(name.lower() in running_processes for name in game_name):
             return game_name[0]
     return None
 
-
 async def update_status(game_name, elapsed_time, games):
+    """
+    Updates the Telegram profile status with the current game name and elapsed time.
+
+    Args:
+        game_name (str): The name of the game to update the status with.
+        elapsed_time (int): The elapsed time in seconds to update the status with.
+        games (list[tuple[str, str]]): A list of tuples containing the process name and friendly name of the games.
+
+    Returns:
+        None
+    """
     global start
     global notification_usernames
     global playing_game
     global notification_message_text_global
-
-    if game_name:
-        log_game_start(game_name)
-    else:
-        for game in list(game_stats["daily"].keys()):
-            log_game_end(game)
+    global notification_message_text_global_str
 
     if game_name is False and elapsed_time is False:
         try:
@@ -619,6 +732,8 @@ async def update_status(game_name, elapsed_time, games):
         if not start:
             start = True
             text_start = ""
+
+            # Building a list of games for the start message. (Because why send a boring message when you can list all your games?)
             for item in games:
                 game_name2 = item[0]
                 friendly_game_name2 = get_friendly_name(game_name2)
@@ -677,12 +792,26 @@ async def update_status(game_name, elapsed_time, games):
         else:
             action_emoji = ACTION_EMOJI_MORE_120_MIN
 
-        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name_cap).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "").replace(" (x64)", "").replace(" (dx11)", "").replace(" (dx12)", "")
+        # Game names may be buggy, so we need to fix them. (I dont really want to deal with whole process names so this is the best I can do)
+        fixedGameName = game_name
+        for key, value in unedited_process_name_mapping.items():
+            if key == game_name:
+                fixedGameName = value[0]
+
+        # Stripping out annoying suffixes because who needs them anyway? (Game names are messy, but this is our band-aid fix)
+        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", fixedGameName).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "").replace(" (x64)", "").replace(" (dx11)", "").replace(" (dx12)", "")
         try:
             await client(UpdateProfileRequest(about=new_status))
             if playing_game != friendly_game_name_cap:
                 if notification_usernames:
-                    notification_message_template = notification_message_text_global.get("1.0", tk.END).strip()
+                    try:
+                        if notification_message_text_global is not None and notification_message_text_global.winfo_exists():
+                            notification_message_template = notification_message_text_global.get("1.0", tk.END).strip()
+                        else:
+                            notification_message_template = notification_message_text_global_str
+                    except Exception:
+                        notification_message_template = notification_message_text_global_str
+
                     if not notification_message_template:
                         notification_message_template = os.getenv("NOTIFICATION_MESSAGE")
 
@@ -701,12 +830,10 @@ async def update_status(game_name, elapsed_time, games):
                                 logger.warning(os.getenv("ERROR_NOTIFICATION_FAILED").replace("#name", first_name).replace("#game_name", friendly_game_name_cap)) if os.getenv("DEBUG") == "true" else None
                                 logger.critical(e) if os.getenv("DEBUG") == "true" else None
                         
-
             playing_game = friendly_game_name_cap
             logger.info(os.getenv("DEBUG_PLAYING") + friendly_game_name_cap + os.getenv("DEBUG_PLAYTIME") + str(elapsed_time + 1)) if os.getenv("DEBUG") == "true" else None
         except Exception as e:
-            messagebox.showerror(os.getenv("ERROR"), os.getenv("TOO_LONG"))
-            logger.warning(os.getenv("TOO_LONG")) if os.getenv("DEBUG") == "true" else None
+            messagebox.showerror(os.getenv("ERROR"), e)
             logger.critical(e) if os.getenv("DEBUG") == "true" else None
             root.quit()
             sys.exit()
@@ -738,12 +865,15 @@ async def main(games):
         game_name = is_any_game_running(games)
         if game_name:
             if current_game != game_name:
-                current_game_before_update = current_game
+                if current_game:
+                    log_game_end(current_game)
+                log_game_start(game_name)
                 current_game = game_name
                 start_time = time.time()
             elapsed_time = int((time.time() - start_time) / check_interval)
             await update_status(game_name, elapsed_time, games)
 
+            # Logging CPU and GPU usage because why not track everything? (Might as well know how much your PC hates you playing games)
             cpu_usage = get_cpu_usage()
             gpu_usage = get_gpu_usage()
 
@@ -753,6 +883,8 @@ async def main(games):
                 _save_stats_to_file()
 
         else:
+            if current_game:
+                log_game_end(current_game)
             current_game = None
             await update_status(False, False, games)
             start_time = None
@@ -761,7 +893,6 @@ async def main(games):
         except:
             pass
         await asyncio.sleep(check_interval)
-
 
 def start_monitoring(games):
     """
@@ -773,37 +904,6 @@ def start_monitoring(games):
     loop = asyncio.get_event_loop()
     loop.create_task(main(games))
     loop.run_forever()
-
-def add_game(event=None):
-    """
-    Adds a new game to the list of added games.
-
-    This function is called when the user enters a game name in the game entry field and presses the "Add" button or hits Enter. It retrieves the process name for the entered game, checks if it's already in the list of added games, and if not, adds it to the list and the games listbox. If the game is not found in the database, a warning message is displayed.
-
-    Args:
-        event (Optional[tkinter.Event]): The event that triggered the function (e.g., button click or Enter key press).
-
-    Raises:
-        None
-    """
-    friendly_name = game_entry.get()
-    if friendly_name:
-        process_names = get_process_name(friendly_name)
-        if process_names in added_games:
-            messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
-            logger.debug(os.getenv("ALREADY_ADDED") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
-            return
-        findgame = find_process_name(process_names)
-        if findgame == False:
-            logger.debug(os.getenv("NOT_IN_DATABASE") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
-            return messagebox.showwarning(os.getenv("WARNING"), os.getenv("NOT_IN_DATABASE"))
-        added_games.append(process_names)
-        games_listbox.insert(tk.END, process_names)
-        game_entry.delete(0, tk.END)
-        logger.info(os.getenv("DEBUG_GAME_ADDED") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
-    else:
-        messagebox.showwarning(os.getenv("WARNING"), os.getenv("VALID_GAME_NAME"))
-        logger.debug(os.getenv("DEBUG_VALID_NAME") + " - " + friendly_name) if os.getenv("DEBUG") == "true" else None
 
 def remove_game(arg=None):
     """
@@ -817,9 +917,10 @@ def remove_game(arg=None):
         games_listbox.delete(selected_game)
         if game_to_remove in added_games:
             added_games.remove(game_to_remove)
+            show_toast(os.getenv("GAME_DELETED"), duration=1000, is_hint=False)
             logger.info(os.getenv("DEBUG_GAME_REMOVED") + " - " + game_to_remove) if os.getenv("DEBUG") == "true" else None
     else:
-        messagebox.showwarning(os.getenv("WARNING"), os.getenv("SELECT_GAME_TO_DEL"))
+        show_toast(os.getenv("SELECT_GAME_TO_DEL"), duration=1000, is_hint=False)
         logger.debug(os.getenv("DEBUG_DELETE_GAME")) if os.getenv("DEBUG") == "true" else None
 
 def start_button_click():
@@ -925,12 +1026,12 @@ def remove_all_games():
     If there are no games in the list, it shows a toast message.
     """
     if not games_listbox.size():
-        show_toast(os.getenv("NO_GAMES_TO_REMOVE"))
+        show_toast(os.getenv("NO_GAMES_TO_REMOVE"), duration=1000, is_hint=False)
         logger.debug(os.getenv("DEBUG_NO_GAMES_TO_REMOVE")) if os.getenv("DEBUG") == "true" else None
     else:
         games_listbox.delete(0, tk.END)
         added_games.clear()
-        show_toast(os.getenv("DEBUG_ALL_GAMES_REMOVED"))
+        show_toast(os.getenv("DEBUG_ALL_GAMES_REMOVED"), duration=1000, is_hint=False)
         logger.info(os.getenv("DEBUG_ALL_GAMES_REMOVED")) if os.getenv("DEBUG") == "true" else None
 
 def show_list():
@@ -994,18 +1095,50 @@ def show_list():
         """
         Adds all games from the process_name_mapping to the added_games list and the games_listbox.
         """
+        isAdded = False
         for game in sorted_keys:
             if game not in added_games:
                 added_games.append(game)
                 games_listbox.insert(tk.END, game)
-        logger.debug(os.getenv("DEBUG_ALL_GAMES") + " - " + str(len(sorted_keys))) if os.getenv("DEBUG") == "true" else None
-        list_window.destroy()
+                isAdded = True
 
+        if isAdded == False:
+            show_toast(os.getenv("NO_GAMES_TO_ADD"), duration=1000, is_hint=False)
+            logger.debug(os.getenv("DEBUG_NO_GAMES_TO_ADD")) if os.getenv("DEBUG") == "true" else None
+        else:
+            logger.debug(os.getenv("DEBUG_ALL_GAMES") + " - " + str(len(sorted_keys))) if os.getenv("DEBUG") == "true" else None
+            list_window.destroy()
+        
     list_window = tk.Toplevel(root)
+    list_window.withdraw()
     list_window.title(os.getenv("FRAME_GAME_LIST"))
     list_frame = tk.Frame(list_window)
     list_frame.pack(padx=20, pady=20)
 
+    root.update_idletasks()
+    root_x = root.winfo_x()
+    root_y = root.winfo_y()
+    root_width = root.winfo_width()
+    root_height = root.winfo_height()
+    list_window.grab_set()
+
+    list_window_width = 500
+    list_window_height = 600
+
+    x = root_x + (root_width // 2) - (list_window_width // 2)
+    y = root_y + (root_height // 2) - (list_window_height // 2)
+
+    list_window.geometry(f"{list_window_width}x{list_window_height}+{x}+{y}")
+
+    def lock_position(event):
+        """
+        Locks the position of the list window by setting its geometry to the saved values of list_window_width, list_window_height, x, and y.
+        This function is called when the list window is resized, and it prevents the window from being moved or resized again.
+        """
+        list_window.geometry(f"{list_window_width}x{list_window_height}+{x}+{y}")
+
+    list_window.bind('<Configure>', lock_position)
+    list_window.deiconify()
 
     search_var = tk.StringVar()
     search_entry = tk.Entry(list_frame, textvariable=search_var, font=(poppins_font, 12), width=50)
@@ -1065,18 +1198,18 @@ def show_list():
     listbox.bind("<Return>", add_to_list)
     listbox.bind("<Double-1>", add_on_double_click)
     add_button = tk.Button(list_frame, text=os.getenv("ADD"), command=add_to_list, cursor="hand2")
-    add_button.grid(row=3, column=0, padx=10, pady=10)
+    add_button.grid(row=3, column=0, padx=5, pady=10, sticky="")
 
     add_all_button = tk.Button(list_frame, text=os.getenv("ADD_ALL"), command=add_all_games, font=(poppins_font, 12), cursor="hand2")
-    add_all_button.grid(row=3, column=2, padx=10, pady=10)
+    add_all_button.grid(row=4, column=0, columnspan=2, padx=0, pady=0, sticky="")
 
     close_button = tk.Button(list_frame, text=os.getenv("CLOSE"), command=list_window.destroy, cursor="hand2")
-    close_button.grid(row=3, column=1, padx=10, pady=10)
+    close_button.grid(row=3, column=1, padx=5, pady=10, sticky="")
 
     list_window.resizable(False, False)
 
-
 theme = 0
+
 def change_theme():
     """
     Changes the theme of the application between light and dark mode.
@@ -1089,7 +1222,7 @@ def change_theme():
         start_button.configure(fg="SteelBlue1")
         sv_ttk.set_theme("light")
         logger.debug(os.getenv("DEBUG_CHANGE_THEMA_LIGHT_MODE")) if os.getenv("DEBUG") == "true" else None
-        show_toast(os.getenv("CHANGE_THEMA_LIGHT_MODE"))
+        show_toast(os.getenv("CHANGE_THEMA_LIGHT_MODE"), is_hint=False)
     else:
         theme = 0
         remove_button.configure(fg="hot pink")
@@ -1097,7 +1230,7 @@ def change_theme():
         start_button.configure(fg="DeepSkyBlue2")
         sv_ttk.set_theme("dark")
         logger.debug(os.getenv("DEBUG_CHANGE_THEMA_DARK_MODE")) if os.getenv("DEBUG") == "true" else None
-        show_toast(os.getenv("CHANGE_THEMA_DARK_MODE"))
+        show_toast(os.getenv("CHANGE_THEMA_DARK_MODE"), is_hint=False)
 
     toggle_debug_mode(True)
     toggle_hint_mode(True)
@@ -1105,10 +1238,9 @@ def change_theme():
     game_stats["theme"] = theme
     _save_stats_to_file()
 
-
 toast_window = None
 
-def show_toast(message, duration=5000, after=2000):
+def show_toast(message, duration=5000, after=1400, fps=60, is_hint=False):
     """
     Displays a toast notification on the screen for a specified duration.
 
@@ -1126,44 +1258,74 @@ def show_toast(message, duration=5000, after=2000):
 
     toast_window = tk.Toplevel(root)
     toast_window.overrideredirect(True)
-    toast_window.geometry("+500+400")
+
+    toast_window.is_hint_toast = is_hint
 
     bg_color = "white"
     fg_color = "black"
-    if (theme == 1):
+    if theme == 1:
         bg_color = "black"
         fg_color = "white"
     toast_label = tk.Label(toast_window, text=message, bg=bg_color, fg=fg_color, padx=20, pady=10)
     toast_label.pack()
 
-    def start_fade(window, remaining_time):
+    def update_toast_position():
+        """
+        Updates the position of the toast notification to keep it centered relative to the root window.
+        """
+        root.update_idletasks()
+        root_x = root.winfo_x()
+        root_y = root.winfo_y()
+        root_width = root.winfo_width()
+        root_height = root.winfo_height()
+
+        toast_width = toast_window.winfo_reqwidth()
+        toast_height = toast_window.winfo_reqheight()
+
+        x = root_x + (root_width // 2) - (toast_width // 2)
+        y = root_y + (root_height // 2) - (toast_height // 2)
+
+        toast_window.geometry(f"+{x}+{y}")
+
+    update_toast_position()
+
+    def start_fade(window, remaining_time, fps2=fps):
+        """
+        Fades the toast notification window by changing its alpha value over time.
+
+        Args:
+            window (tkinter.Toplevel): The toast notification window.
+            remaining_time (int): The remaining time for the toast notification in milliseconds.
+            fps2 (int, optional): The frames per second for the fade animation. Defaults to the value of the fps variable.
+        """
         if remaining_time > 0:
             alpha = remaining_time / duration
             window.attributes("-alpha", alpha)
-            window.after(50, start_fade, window, remaining_time - 50)
+            window.after(int(1000 / fps2), start_fade, window, remaining_time - (int(1000 / fps2)))
         else:
             window.destroy()
 
-
     try:
-        toast_window.after(after, start_fade, toast_window, duration - 4800)
+        toast_window.after(after, start_fade, toast_window, duration)
     except:
         pass
 
+"""
+Checks if the current operating system is Windows. If the OS is not Windows (e.g., Linux or macOS),
+logs a critical error message indicating the OS is unsupported and exits the application gracefully.
+
+This application is designed specifically for Windows systems due to dependencies on Windows-specific
+libraries and processes (e.g., psutil for process monitoring). Running on other OS may cause
+unpredictable behavior or failures.
+"""
 current_os = is_supported_os()
-"""
-Checks if the current operating system is not Windows or Linux, and if so, logs a critical message and exits the application.
-"""
-if current_os != 'windows' and current_os != 'linux':
+if "Windows" not in current_os:
     logger.critical(os.getenv("UNSUPPORTED_OS"))
     handle_exit(None, None)
 
-if current_os == "windows":
-    mapping_file_path = os.getenv("GAME_DATA_JSON_WINDOWS")
-elif current_os == "linux":
-    mapping_file_path = os.getenv("GAME_DATA_JSON_LINUX")
-
+mapping_file_path = os.getenv("GAME_DATA_JSON_WINDOWS")
 process_name_mapping = load_process_mapping(mapping_file_path)
+unedited_process_name_mapping = load_process_mapping(mapping_file_path)
 
 """
 Initializes a Telegram client and starts the client session.
@@ -1188,6 +1350,8 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(print_me())
 
 root = tk.Tk()
+root.withdraw()
+root.protocol("WM_DELETE_WINDOW", lambda: handle_exit(None, None))
 root.title(f"{os.getenv('APP_TITLE')} v{local_version}")
 icon_image = Image.open(str(app_icon))
 icon_image = icon_image.convert('RGBA')
@@ -1212,18 +1376,8 @@ frame.pack(padx=40, pady=0)
 frame = tk.Frame(root)
 frame.pack(padx=40, pady=40)
 
-label = tk.Label(frame, text=os.getenv("ADD_GAME"), font=(poppins_font, 12))
-label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
-
-game_entry = tk.Entry(frame, width=30, font=(poppins_font, 12), cursor="xterm")
-game_entry.grid(row=0, column=1, padx=5, pady=5)
-game_entry.bind("<Return>", add_game)
-
-add_button = tk.Button(frame, text=os.getenv("ADD_GAME_BUTTON"), command=add_game, font=(poppins_font, 12), cursor="hand2")
-add_button.grid(row=0, column=2, padx=5, pady=5)
-
 list_button = tk.Button(frame, text=os.getenv("LIST_OF_GAMES"), command=show_list, font=(poppins_font, 12), cursor="hand2")
-list_button.grid(row=0, column=3, padx=5, pady=5)
+list_button.grid(row=0, column=1, padx=5, pady=5)
 
 games_listbox = tk.Listbox(frame, selectmode=tk.SINGLE, width=50, font=(poppins_font, 12))
 games_listbox.grid(row=1, column=0, columnspan=4, padx=5, pady=5)
@@ -1256,7 +1410,7 @@ hint_mode_var = tk.BooleanVar()
 
 debug_mode_button = tk.Checkbutton(frame, text=os.getenv("DEBUG_MODE_LABEL"), variable=debug_mode_var, command=lambda: toggle_debug_mode(False), font=(poppins_font, 12), cursor="hand2")
 debug_mode_button.grid(row=4, column=2, columnspan=2, padx=5, pady=5)
-
+debug_mode_button.select() if debugmode == True else debug_mode_button.deselect()
 
 hint_mode_button = tk.Checkbutton(frame, text=os.getenv("SHOW_HINTS"), variable=hint_mode_var, command=lambda: toggle_hint_mode(False), font=(poppins_font, 12), cursor="hand2")
 hint_mode_button.grid(row=5, column=2, columnspan=2, padx=5, pady=5)
@@ -1267,7 +1421,7 @@ notification_usernames_label.grid(row=6, column=0, sticky="w", padx=5, pady=5)
 notification_usernames_entry = tk.Entry(frame, width=50, font=(poppins_font, 12), cursor="xterm")
 notification_usernames_entry.grid(row=6, column=1, columnspan=3, padx=5, pady=5)
 if notification_usernames:
-    notification_usernames_entry.insert(0, ", ".join(notification_usernames)) 
+    notification_usernames_entry.insert(0, ", ".join(notification_usernames))
     notification_usernames_entry.xview_moveto(1)
 else:
     add_placeholder(notification_usernames_entry, os.getenv("NOTIFICATION_USERNAMES_PLACEHOLDER"))
@@ -1310,34 +1464,50 @@ if "theme" in game_stats:
 
 # HINTS
 def on_enter(hint_message=None):
+    """
+    If HINTS environment variable is set to "true", shows a hint depending on the hint_message parameter.
+
+    Parameters:
+        hint_message (str): The message to be shown as a hint. Can be one of the following: "default_bio_text", "debug_mode_button", "remove_button", "remove_all_button", "start_button", "chthema", "list_button", "notification_usernames_entry", "notification_message_text".
+    """
     if os.getenv("HINTS") == "true":
         if hint_message == "default_bio_text":
-            show_toast(os.getenv("DEFAULT_BIO_HINT"), duration=20000)
+            show_toast(os.getenv("DEFAULT_BIO_HINT"), duration=7000, is_hint=True)
         if hint_message == "debug_mode_button":
-            show_toast(os.getenv("DEBUG_MODE_HINT"), duration=20000)
+            show_toast(os.getenv("DEBUG_MODE_HINT"), duration=7000, is_hint=True)
         if hint_message == "remove_button":
-            show_toast(os.getenv("REMOVE_HINT"), duration=20000)
+            show_toast(os.getenv("REMOVE_HINT"), duration=7000, is_hint=True)
         if hint_message == "remove_all_button":
-            show_toast(os.getenv("REMOVE_ALL_HINT"), duration=20000)
+            show_toast(os.getenv("REMOVE_ALL_HINT"), duration=7000, is_hint=True)
         if hint_message == "start_button":
-            show_toast(os.getenv("START_HINT"), duration=20000)
+            show_toast(os.getenv("START_HINT"), duration=7000, is_hint=True)
         if hint_message == "chthema":
-            show_toast(os.getenv("CHANGE_THEMA_HINT"), duration=20000)
+            show_toast(os.getenv("CHANGE_THEMA_HINT"), duration=7000, is_hint=True)
         if hint_message == "list_button":
-            show_toast(os.getenv("GAME_LIST_HINT"), duration=20000)
+            show_toast(os.getenv("GAME_LIST_HINT"), duration=7000, is_hint=True)
         if hint_message == "notification_usernames_entry":
-            show_toast(os.getenv("NOTIFICATION_USERNAMES_HINT"), duration=20000)
+            show_toast(os.getenv("NOTIFICATION_USERNAMES_HINT"), duration=7000, is_hint=True)
         if hint_message == "notification_message_text":
-            show_toast(os.getenv("NOTIFICATION_MESSAGE_CUSTOM_HINT"), duration=20000)
+            show_toast(os.getenv("NOTIFICATION_MESSAGE_CUSTOM_HINT"), duration=7000, is_hint=True)
 
 def on_leave(event):
+    """
+    Destroys the toast notification window if it exists and it is a hint.
+
+    Parameters:
+        event (tkinter.Event): The event that triggered this function.
+
+    Returns:
+        None
+    """
     global toast_window
     if toast_window is not None:
-        try:
-            toast_window.destroy()
-        except:
-            pass
-    toast_window = None
+        if getattr(toast_window, 'is_hint_toast', False):
+            try:
+                toast_window.destroy()
+            except:
+                pass
+            toast_window = None
 
 default_bio_text.bind("<Enter>", lambda event: on_enter(hint_message="default_bio_text"))
 default_bio_text.bind("<Leave>", on_leave)
@@ -1364,7 +1534,7 @@ emoji_font2 = tkfont.Font(family="Noto Color Emoji", size=12)
 default_bio_text.configure(font=emoji_font)
 default_bio_text.configure(font=emoji_font2)
 
-latest_version = get_latest_version()
+latest_version = get_latest_version(os.getenv("LANG"))
 
 """
 Displays a warning message to the user if a newer version of the application is available.
@@ -1373,5 +1543,15 @@ The message includes the latest version number and the current version number, a
 """
 if latest_version["version"] != "" and local_version and str(latest_version["version"]) != str(local_version):
     messagebox.showwarning(os.getenv("UPDATE_AVAILABLE"), os.getenv("UPDATE_AVAILABLE_MESSAGE").replace("#latest_version", latest_version["version"]).replace("#current_version", local_version).replace("#update_message", latest_version["message"]))
+
+root.update_idletasks()
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+window_width = root.winfo_reqwidth()
+window_height = root.winfo_reqheight()
+x = (screen_width - window_width) // 2
+y = (screen_height - window_height) // 2
+root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+root.deiconify()
 
 root.mainloop()

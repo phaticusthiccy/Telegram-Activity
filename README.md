@@ -5,11 +5,11 @@
 [<img src="https://images.emojiterra.com/openmoji/v15.0/512px/1f1f9-1f1f7.png" alt="Türkçe" width="30" height="30"> Türkçe](README.tr.md)
 
 
-## Description (Supports Windows & Linux)
+## Description (Supports Only Windows)
 
 Telegram Game Status is a Python application that monitors the games you're playing on your computer and automatically updates your Telegram profile status accordingly. With this app, you can showcase your gaming activity to your Telegram contacts, letting them know which game you're currently playing and for how long you've been playing it.
 
-A total of 970 games are supported! Click [here (windows)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) or [here (linux)](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games_linux.csv) to see the games!
+A total of 1082 games are supported! [Click here](https://github.com/phaticusthiccy/Telegram-Activity/blob/master/games/games.csv) to see the games!
 
 ## 1. Requirements
 
@@ -34,6 +34,7 @@ The following libraries are required for the project to run:
 - `matplotlib`
 - `GPUtil`
 - `numpy`
+- `setuptools`
 
 You can install these dependencies using the [`requirements.txt`](./requirements.txt) file:
 
@@ -44,7 +45,7 @@ pip install -r requirements.txt
 ## 2. Environment Variables
 To ensure the project runs correctly, you need to set certain environment variables. Copy the sample.env file to .env and fill in the required values:
 
-The following environment variables are required for the application to function correctly:
+The following environment variables are required for the application to function correctly, to get these variables go to the https://my.telegram.org:
 
 ``API_ID``: Your Telegram API ID, which is required for authenticating with the Telegram API.
 
@@ -56,12 +57,6 @@ The following environment variables are required for the application to function
 
 ```bash
 cp sample.env .env
-```
-
-After copying it, start the edit file with this command:
-
-```bash
-nano .env
 ```
 
 ## 3. Usage
@@ -110,9 +105,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Quick Start (Windows Desktop Shortcut)
 You don't need to open the command line and enter a lot of code every time to run the project! Learn how to create a desktop shortcut [by clicking here](https://github.com/phaticusthiccy/Telegram-Activity/wiki/How-to-Create-Windows-Desktop-Shortcut)!
-
-## Quick Start (Linux Desktop Shortcut)
-You don't need to open the command line and enter a lot of code every time to run the project! Learn how to create a desktop shortcut [by clicking here](https://github.com/phaticusthiccy/Telegram-Activity/wiki/How-to-Create-Linux-Desktop-Shortcut)!
 
 ## Troubleshooting
 

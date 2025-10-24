@@ -8,3 +8,4 @@ sv_ttk
 matplotlib
 GPUtil
 numpy
+setuptools

@@ -14,7 +14,6 @@ if /I "%driveLetter%"=="D" (
 )
 
 echo python gui.py >> "%desktopPath%\Game Monitor.bat"
-echo pause >> "%desktopPath%\Game Monitor.bat"
 
 echo The "Game Monitor.bat" file has been created on the desktop!
 pause
