@@ -147,10 +147,13 @@ def log_game_start(game_name):
     Notes:
         The start time is recorded in ISO format using datetime.now().isoformat().
         If the game is not already in the daily stats dictionary, a new entry is created with a start time and total duration of 0.
+        The start_time is updated every time the game starts.
     """
     current_time = datetime.now().isoformat()
     if game_name not in game_stats["daily"]:
-        game_stats["daily"][game_name] = {"start_time": current_time, "total_duration": 1}
+        game_stats["daily"][game_name] = {"start_time": current_time, "total_duration": 0}
+    else:
+        game_stats["daily"][game_name]["start_time"] = current_time
 
 def log_game_end(game_name):
     """
@@ -170,7 +173,6 @@ def log_game_end(game_name):
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds() / 60
         game_stats["daily"][game_name]["total_duration"] += duration
-        game_stats["daily"][game_name]["total_duration"] = game_stats["daily"][game_name]["total_duration"] / 10
         _save_stats_to_file()
 
 def _save_stats_to_file():
@@ -321,7 +323,7 @@ def is_supported_os():
     Returns:
         str: The current system platform as a lowercase string.
     """
-    system = platform.system().lower()
+    system = platform.system() + " " + platform.release()
     logger.info(os.getenv("DEBUG_SYSTEM") + system) if os.getenv("DEBUG") == "true" else None
     return system
 
@@ -370,34 +372,83 @@ def capitalize_first_letters(text):
 
 def show_stats():
     """
-    Creates a new window to show game statistics.
-    """
-    stats_window = tk.Toplevel(root)
-    stats_window.title(os.getenv("STATS_TITLE"))
-
-    time_frame = tk.StringVar(value="daily")
-    tk.Radiobutton(stats_window, text=os.getenv("DAILY"), variable=time_frame, value="daily", selectcolor="gray").pack()
-
-    tk.Button(stats_window, text=os.getenv("GENERATE_REPORT"), command=lambda: _generate_report(time_frame.get())).pack()
-
-def _generate_report(time_frame):
-    """
-    Generates a bar chart with the total durations of each game in the given time frame.
+    Displays a window containing statistics about the user's gaming activity.
 
     Args:
-        time_frame (str): The time frame to generate the report for, either "daily" or "weekly".
+        None
 
     Returns:
         None
     """
+    stats_window = tk.Toplevel(root)
+    stats_window.withdraw()
+    stats_window.title(os.getenv("STATS_TITLE"))
+
+    root.update_idletasks()
+    root_x = root.winfo_x()
+    root_y = root.winfo_y()
+    root_width = root.winfo_width()
+    root_height = root.winfo_height()
+
+    stats_window_width = 350
+    stats_window_height = 200
+
+    x = root_x + (root_width // 2) - (stats_window_width // 2)
+    y = root_y + (root_height // 2) - (stats_window_height // 2)
+
+    stats_window.geometry(f"{stats_window_width}x{stats_window_height}+{x}+{y}")
+    stats_window.resizable(False, False)
+
+    def lock_position(event):
+        stats_window.geometry(f"{stats_window_width}x{stats_window_height}+{x}+{y}")
+
+    stats_window.bind('<Configure>', lock_position)
+
+    if theme == 0:
+        bg_color = "#2b2b2b"
+        fg_color = "white"
+        select_color = "white"
+    else:
+        bg_color = "#f0f0f0"
+        fg_color = "black"
+        select_color = "black"
+
+    stats_window.configure(bg=bg_color)
+
+    title_label = tk.Label(stats_window, text=os.getenv("STATS_TITLE"), font=(poppins_font, 16, "bold"), bg=bg_color, fg=fg_color)
+    title_label.pack(pady=(20, 10))
+
+    content_frame = tk.Frame(stats_window, bg=bg_color)
+    content_frame.pack(pady=10)
+
+    generate_button = tk.Button(content_frame, text=os.getenv("GENERATE_REPORT"), command=lambda: _generate_report(stats_window), font=(poppins_font, 12), bg="#4CAF50", fg="white", relief="raised", cursor="hand2")
+    generate_button.pack(pady=(10, 0))
+
+    stats_window.deiconify()
+
+def _generate_report(oldWindow=None):
+    """
+    Destroys the old statistics window and creates a new one with the current daily game activity data.
+
+    Args:
+        oldWindow (tkinter.Toplevel): The old statistics window to be destroyed.
+
+    Returns:
+        None
+    """
+    oldWindow.destroy()
+
+    import matplotlib
+    matplotlib.use('TkAgg')
     import matplotlib.pyplot as plt
     import numpy as np
     from matplotlib.patches import ConnectionPatch
     from matplotlib.widgets import Button
 
-    data = game_stats["daily"] 
+    data = game_stats["daily"]
 
     labels = list(data.keys())
+    labelsNames = [unedited_process_name_mapping[data][0] for data in labels]
     total_durations = [v['total_duration'] for v in data.values()]
     sum_total = sum(total_durations)
     overall_ratios = [dur / sum_total for dur in total_durations]
@@ -406,141 +457,191 @@ def _generate_report(time_frame):
     ax1 = fig.add_axes([0.3, 0.1, 0.35, 0.8])
     ax2 = fig.add_axes([0.7, 0.1, 0.25, 0.8])
 
-    def draw_plots(selected_label):
+    wedges = None
+    current_hovered = None
+
+    def draw_plots(selected_label, hovered=None):
+        nonlocal wedges, current_hovered
         idx = labels.index(selected_label)
         explode = [0] * len(labels)
         explode[idx] = 0.1
+        if hovered is not None:
+            explode[hovered] = 0.2
+            
         ax1.clear()
         ax2.clear()
 
-        angle = -180 * overall_ratios[idx]
-        wedges, texts, autotexts = ax1.pie(overall_ratios, autopct='%1.1f%%',
-                                        startangle=angle, labels=labels,
+        ratios = overall_ratios
+
+        wedges, texts, autotexts = ax1.pie(ratios, autopct='%1.1f%%',
+                                        startangle=0, labels=labelsNames,
                                         explode=explode, textprops={'fontsize': 8})
-        
+        for wedge in wedges:
+            wedge.set_picker(True)
+        if hovered is not None:
+            wedges[hovered].set_linewidth(3)
+            wedges[hovered].set_edgecolor('black')
+
         game_data = data[selected_label]
         played_time = game_data['total_duration']
-        ax1.text(0, -1.5, f'{os.getenv("PLAYED_TIME")} {played_time:.2f} {os.getenv("DURATION")}', 
+        ax1.text(0, -1.5, f'{os.getenv("PLAYED_TIME")} {played_time:.2f} {os.getenv("DURATION")}',
                 ha='center', fontsize=10, bbox=dict(facecolor='white', alpha=0.5))
-        
+
         wedge = wedges[idx]
         theta1, theta2 = wedge.theta1, wedge.theta2
         center, r = wedge.center, wedge.r
-        
+
         game_data = data[selected_label]
-        cpu = game_data['avgCPUusage'] / 100
-        gpu = game_data['avgGPUusage'] / 100
+        cpu = game_data.get('avgCPUusage', 0) / 100
+        gpu = game_data.get('avgGPUusage', 0) / 100
         age_ratios = [cpu, gpu]
         age_labels = ['CPU', 'GPU']
-        
+
         bottom = 1
         width = 0.2
         colors = ['#1f77b4', '#ff7f0e']
-        
-        for j, (height, label) in enumerate(reversed(list(zip(age_ratios, age_labels)))): 
+
+        for j, (height, label) in enumerate(reversed(list(zip(age_ratios, age_labels)))):
             bottom -= height
             bars = ax2.bar(0, height, width, bottom=bottom, color=colors[j],
                         label=label, alpha=0.7)
             ax2.bar_label(bars, labels=[f"{height*100:.0f}%"],
                         label_type='center', color='white')
-        
-        
+
+
         ax2.set_title(f'{os.getenv("COMPUTE_USAGE")} ({selected_label})', pad=20)
         ax2.legend(loc='upper right')
         ax2.axis('off')
         ax2.set_xlim(-2.5 * width, 2.5 * width)
-        
+
         bar_top = 1.0
         bar_bottom = 1.0 - sum(age_ratios)
-        
-        x_top = r * np.cos(np.pi / 180 * theta2) + center[0]
-        y_top = r * np.sin(np.pi / 180 * theta2) + center[1]
-        con_top = ConnectionPatch(xyA=(-width/2, bar_top), coordsA=ax2.transData,
-                                xyB=(x_top, y_top), coordsB=ax1.transData, color='gray')
-        ax2.add_artist(con_top)
-        
-        x_bot = r * np.cos(np.pi / 180 * theta1) + center[0]
-        y_bot = r * np.sin(np.pi / 180 * theta1) + center[1]
-        con_bot = ConnectionPatch(xyA=(-width/2, bar_bottom), coordsA=ax2.transData,
-                                xyB=(x_bot, y_bot), coordsB=ax1.transData, color='gray')
-        ax2.add_artist(con_bot)
-        
+
         fig.canvas.draw_idle()
+
+    def on_pick(event):
+        if event.mouseevent.button == 1:
+            artist = event.artist
+            if wedges and artist in wedges:
+                idx = wedges.index(artist)
+                selected_label = labels[idx]
+                global current_selection
+                current_selection = selected_label
+                print(selected_label)
+                hoveredLabel = labels.index(selected_label)
+                draw_plots(selected_label, hovered=hoveredLabel)
+
+    def on_motion(event):
+        nonlocal current_hovered
+        if wedges:
+            for i, wedge in enumerate(wedges):
+                if wedge.contains(event)[0]:
+                    if current_hovered != i:
+                        current_hovered = i
+                        draw_plots(labels[i], hovered=i)
+                    return
+
+    fig.canvas.mpl_connect('pick_event', on_pick)
+    fig.canvas.mpl_connect('motion_notify_event', on_motion)
 
     try:
         current_selection = labels[0]
     except:
         messagebox.showinfo("Error", os.getenv("NO_GAME_DATA"))
         return
-        
+
     draw_plots(current_selection)
 
-    menu_start_pos = [-0.25, 0.1, 0.2, 0.8]
-    menu_end_pos = [0.05, 0.1, 0.2, 0.8]
-
-    menu_ax = fig.add_axes(menu_start_pos)
-    menu_ax.set_xlim(0, 1)
-    menu_ax.set_ylim(0, 1)
-    menu_ax.set_clip_on(True)
-    menu_ax.axis('off')
-    menu_texts = []
-
-    n = len(labels)
-    for i, lab in enumerate(labels):
-        y = 0.9 - i * (0.8 / n)
-        txt = menu_ax.text(0.1, y, lab, fontsize=12, picker=True,
-                        bbox=dict(boxstyle="round", fc="white", ec="black"))
-        txt.set_clip_on(True)
-        menu_texts.append(txt)
-
-    global menu_visible
-    menu_visible = False
-
-    def slide_menu(show=True):
-        start = menu_start_pos[0] if show else menu_end_pos[0]
-        end = menu_end_pos[0] if show else menu_start_pos[0]
-        steps = 20
-        delta = (end - start) / steps
-        for i in range(steps):
-            new_x = start + delta * (i + 1)
-            pos = [new_x, menu_end_pos[1], menu_end_pos[2], menu_end_pos[3]]
-            menu_ax.set_position(pos)
-            fig.canvas.draw_idle()
-            plt.pause(0.01)
-
-    def on_menu_click(event):
-        global current_selection, menu_visible
-        if menu_visible and event.inaxes != menu_ax:
-            slide_menu(show=False)
-            menu_visible = False
-
-    def on_menu_pick(event):
-        global current_selection, menu_visible
-        artist = event.artist
-        if artist in menu_texts:
-            selected = artist.get_text()
-            current_selection = selected
-            draw_plots(selected)
-            slide_menu(show=False)
-            menu_visible = False
-
-    fig.canvas.mpl_connect('pick_event', on_menu_pick)
-    fig.canvas.mpl_connect('button_press_event', on_menu_click)
-
     ax_button = fig.add_axes([0.01, 0.9, 0.1, 0.05])
-    menu_button = Button(ax_button, 'Menu')
+    menu_button = Button(ax_button, os.getenv("MENU"))
 
     def toggle_menu(event):
-        global menu_visible
-        if not menu_visible:
-            slide_menu(show=True)
-            menu_visible = True
-        else:
-            slide_menu(show=False)
-            menu_visible = False
+        show_game_selection_window()
 
     menu_button.on_clicked(toggle_menu)
 
+    def show_game_selection_window():
+        import tkinter as tk
+        from tkinter import ttk
+
+        selection_window = tk.Toplevel()
+        selection_window.title(os.getenv("SELECT_GAME"))
+        selection_window.geometry("600x500")
+        selection_window.resizable(False, False)
+
+        fig_window = fig.canvas.manager.window
+        
+        selection_window.update_idletasks()
+        fig_x = fig_window.winfo_x()
+        fig_y = fig_window.winfo_y()
+        fig_width = fig_window.winfo_width()
+        fig_height = fig_window.winfo_height()
+        window_width = selection_window.winfo_reqwidth() + 100
+        window_height = selection_window.winfo_reqheight()
+        x = fig_x + (fig_width - window_width) // 2
+        y = fig_y + (fig_height - window_height) // 2
+        selection_window.geometry(f"+{x}+{y}")
+
+        def lock_position(event):
+            selection_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+        selection_window.bind('<Configure>', lock_position)
+
+        search_var = tk.StringVar()
+        search_entry = ttk.Entry(selection_window, textvariable=search_var, width=200)
+        search_entry.pack(pady=10, padx=10, fill=tk.X)
+
+        frame = ttk.Frame(selection_window)
+        frame.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
+
+        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL)
+        listbox = tk.Listbox(frame, yscrollcommand=scrollbar.set, cursor="hand2", selectmode=tk.SINGLE, width=200, height=25)
+        scrollbar.config(command=listbox.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        for lab in labelsNames:
+            listbox.insert(tk.END, lab)
+
+        def filter_list(*args):
+            search_term = search_var.get().lower()
+            listbox.delete(0, tk.END)
+            for lab in labelsNames:
+                if search_term in lab.lower():
+                    listbox.insert(tk.END, lab)
+
+        search_var.trace_add("write", filter_list)
+
+        def on_select(event):
+            selection = listbox.curselection()
+            if selection:
+                selected_game = listbox.get(selection[0])
+                try:
+                    idx = labelsNames.index(selected_game)
+                    selected_key = labels[idx]
+                    global current_selection
+                    current_selection = selected_key
+                    draw_plots(selected_key)
+                except ValueError:
+                    pass
+                selection_window.destroy()
+
+        listbox.bind('<Double-1>', on_select)
+        listbox.bind('<Return>', on_select)
+
+        ok_button = ttk.Button(selection_window, text="Select", command=lambda: on_select(None))
+        ok_button.pack(pady=10)
+
+    try:
+        fig_width = 1200
+        fig_height = 600
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        x = (screen_width - fig_width) // 2
+        y = (screen_height - fig_height) // 2
+        fig.canvas.manager.window.geometry(f"{fig_width}x{fig_height}+{x}+{y}")
+    except:
+        pass
     plt.show()
 
 def find_process_name(name):
@@ -596,11 +697,11 @@ def is_any_game_running(game_names):
         str or None: The name of the first game found to be running, or None if no games are running.
     """
     running_processes = [proc.info['name'].lower() for proc in psutil.process_iter(['name'])]
+    # Looping through games to see if any are running. (It's like playing hide and seek with processes, but less fun)
     for game_name in game_names:
         if any(name.lower() in running_processes for name in game_name):
             return game_name[0]
     return None
-
 
 async def update_status(game_name, elapsed_time, games):
     """
@@ -620,12 +721,6 @@ async def update_status(game_name, elapsed_time, games):
     global notification_message_text_global
     global notification_message_text_global_str
 
-    if game_name:
-        log_game_start(game_name)
-    else:
-        for game in list(game_stats["daily"].keys()):
-            log_game_end(game)
-
     if game_name is False and elapsed_time is False:
         try:
             await client(UpdateProfileRequest(about=default_bio))
@@ -637,6 +732,8 @@ async def update_status(game_name, elapsed_time, games):
         if not start:
             start = True
             text_start = ""
+
+            # Building a list of games for the start message. (Because why send a boring message when you can list all your games?)
             for item in games:
                 game_name2 = item[0]
                 friendly_game_name2 = get_friendly_name(game_name2)
@@ -695,7 +792,14 @@ async def update_status(game_name, elapsed_time, games):
         else:
             action_emoji = ACTION_EMOJI_MORE_120_MIN
 
-        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", friendly_game_name_cap).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "").replace(" (x64)", "").replace(" (dx11)", "").replace(" (dx12)", "")
+        # Game names may be buggy, so we need to fix them. (I dont really want to deal with whole process names so this is the best I can do)
+        fixedGameName = game_name
+        for key, value in unedited_process_name_mapping.items():
+            if key == game_name:
+                fixedGameName = value[0]
+
+        # Stripping out annoying suffixes because who needs them anyway? (Game names are messy, but this is our band-aid fix)
+        new_status = (os.getenv("ACTION_STATUS").replace("#action_emoji", action_emoji).replace("#game_name", fixedGameName).replace("#elapsed_time", str(elapsed_time + 1))).replace(" (Steam)", "").replace(" (Non-Steam)", "").replace(" (x86)", "").replace(" (steam)", "").replace(" (non-steam)", "").replace(" (Retail)", "").replace(" (retail)", "").replace(" (Release)", "").replace(" (release)", "").replace(" (Dev)", "").replace(" (dev)", "").replace(" (x64)", "").replace(" (dx11)", "").replace(" (dx12)", "")
         try:
             await client(UpdateProfileRequest(about=new_status))
             if playing_game != friendly_game_name_cap:
@@ -726,12 +830,10 @@ async def update_status(game_name, elapsed_time, games):
                                 logger.warning(os.getenv("ERROR_NOTIFICATION_FAILED").replace("#name", first_name).replace("#game_name", friendly_game_name_cap)) if os.getenv("DEBUG") == "true" else None
                                 logger.critical(e) if os.getenv("DEBUG") == "true" else None
                         
-
             playing_game = friendly_game_name_cap
             logger.info(os.getenv("DEBUG_PLAYING") + friendly_game_name_cap + os.getenv("DEBUG_PLAYTIME") + str(elapsed_time + 1)) if os.getenv("DEBUG") == "true" else None
         except Exception as e:
-            messagebox.showerror(os.getenv("ERROR"), os.getenv("TOO_LONG"))
-            logger.warning(os.getenv("TOO_LONG")) if os.getenv("DEBUG") == "true" else None
+            messagebox.showerror(os.getenv("ERROR"), e)
             logger.critical(e) if os.getenv("DEBUG") == "true" else None
             root.quit()
             sys.exit()
@@ -763,12 +865,15 @@ async def main(games):
         game_name = is_any_game_running(games)
         if game_name:
             if current_game != game_name:
-                current_game_before_update = current_game
+                if current_game:
+                    log_game_end(current_game)
+                log_game_start(game_name)
                 current_game = game_name
                 start_time = time.time()
             elapsed_time = int((time.time() - start_time) / check_interval)
             await update_status(game_name, elapsed_time, games)
 
+            # Logging CPU and GPU usage because why not track everything? (Might as well know how much your PC hates you playing games)
             cpu_usage = get_cpu_usage()
             gpu_usage = get_gpu_usage()
 
@@ -778,6 +883,8 @@ async def main(games):
                 _save_stats_to_file()
 
         else:
+            if current_game:
+                log_game_end(current_game)
             current_game = None
             await update_status(False, False, games)
             start_time = None
@@ -797,39 +904,6 @@ def start_monitoring(games):
     loop = asyncio.get_event_loop()
     loop.create_task(main(games))
     loop.run_forever()
-
-'''
-def add_game(event=None):
-    """
-    Adds a new game to the list of added games.
-
-    This function is called when the user enters a game name in the game entry field and presses the "Add" button or hits Enter. It retrieves the process name for the entered game, checks if it's already in the list of added games, and if not, adds it to the list and the games listbox. If the game is not found in the database, a warning message is displayed.
-
-    Args:
-        event (Optional[tkinter.Event]): The event that triggered the function (e.g., button click or Enter key press).
-
-    Raises:
-        None
-    """
-    friendly_name = game_entry.get()
-    if friendly_name:
-        process_names = get_process_name(friendly_name)
-        if process_names in added_games:
-            messagebox.showerror(os.getenv("ERROR"), os.getenv("ALREADY_ADDED"))
-            logger.debug(os.getenv("ALREADY_ADDED") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
-            return
-        findgame = find_process_name(process_names)
-        if findgame == False:
-            logger.debug(os.getenv("NOT_IN_DATABASE") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
-            return messagebox.showwarning(os.getenv("WARNING"), os.getenv("NOT_IN_DATABASE"))
-        added_games.append(process_names)
-        games_listbox.insert(tk.END, process_names)
-        game_entry.delete(0, tk.END)
-        logger.info(os.getenv("DEBUG_GAME_ADDED") + " - " + process_names) if os.getenv("DEBUG") == "true" else None
-    else:
-        messagebox.showwarning(os.getenv("WARNING"), os.getenv("VALID_GAME_NAME"))
-        logger.debug(os.getenv("DEBUG_VALID_NAME") + " - " + friendly_name) if os.getenv("DEBUG") == "true" else None
-'''
 
 def remove_game(arg=None):
     """
@@ -1236,20 +1310,22 @@ def show_toast(message, duration=5000, after=1400, fps=60, is_hint=False):
     except:
         pass
 
+"""
+Checks if the current operating system is Windows. If the OS is not Windows (e.g., Linux or macOS),
+logs a critical error message indicating the OS is unsupported and exits the application gracefully.
+
+This application is designed specifically for Windows systems due to dependencies on Windows-specific
+libraries and processes (e.g., psutil for process monitoring). Running on other OS may cause
+unpredictable behavior or failures.
+"""
 current_os = is_supported_os()
-"""
-Checks if the current operating system is not Windows or Linux, and if so, logs a critical message and exits the application.
-"""
-if current_os != 'windows' and current_os != 'linux':
+if "Windows" not in current_os:
     logger.critical(os.getenv("UNSUPPORTED_OS"))
     handle_exit(None, None)
 
-if current_os == "windows":
-    mapping_file_path = os.getenv("GAME_DATA_JSON_WINDOWS")
-elif current_os == "linux":
-    mapping_file_path = os.getenv("GAME_DATA_JSON_LINUX")
-
+mapping_file_path = os.getenv("GAME_DATA_JSON_WINDOWS")
 process_name_mapping = load_process_mapping(mapping_file_path)
+unedited_process_name_mapping = load_process_mapping(mapping_file_path)
 
 """
 Initializes a Telegram client and starts the client session.
@@ -1299,16 +1375,6 @@ frame.pack(padx=40, pady=0)
 
 frame = tk.Frame(root)
 frame.pack(padx=40, pady=40)
-
-#label = tk.Label(frame, text=os.getenv("ADD_GAME"), font=(poppins_font, 12))
-#label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
-
-#game_entry = tk.Entry(frame, width=30, font=(poppins_font, 12), cursor="xterm")
-#game_entry.grid(row=0, column=1, padx=5, pady=5)
-#game_entry.bind("<Return>", add_game)
-
-#add_button = tk.Button(frame, text=os.getenv("ADD_GAME_BUTTON"), command=add_game, font=(poppins_font, 12), cursor="hand2")
-#add_button.grid(row=0, column=2, padx=5, pady=5)
 
 list_button = tk.Button(frame, text=os.getenv("LIST_OF_GAMES"), command=show_list, font=(poppins_font, 12), cursor="hand2")
 list_button.grid(row=0, column=1, padx=5, pady=5)
